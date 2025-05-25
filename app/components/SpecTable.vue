@@ -69,7 +69,7 @@ const schema = z.object({
 
 type Schema = z.output<typeof schema>
 
-const state = reactive<Schema>({
+const state = reactive<Partial<Schema>>({
   uuid: nanoid(),
   name: '',
   length: 0,
@@ -113,14 +113,14 @@ const onSubmit = (event: FormSubmitEvent<Schema>) => {
   if (formAttr.edit) {
     const index = data.value.findIndex((item) => item.uuid === state.uuid)
     if (index !== -1) {
-      data.value[index] = { ...state }
+      data.value[index] = { ...event.data }
       toast.add({
         title: '更新成功',
         color: 'success',
       })
     }
   } else {
-    data.value.push({ ...state })
+    data.value.push({ ...event.data })
     toast.add({
       title: '添加成功',
       color: 'success',
@@ -153,9 +153,7 @@ const onSubmit = (event: FormSubmitEvent<Schema>) => {
         </div>
       </div>
     </template>
-    <ClientOnly>
-      <UTable :data="data" :columns="columns"></UTable>
-    </ClientOnly>
+    <UTable :data="data" :columns="columns"></UTable>
   </UCard>
   <UModal
     v-model:open="formAttr.open"
