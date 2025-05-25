@@ -30,3 +30,34 @@ export const defaultTruckSpecs: SpecsType[] = [
     height: 2800,
   },
 ]
+
+export const defaultCargoSpecs: SpecsType[] = [
+  {
+    uuid: nanoid(),
+    name: '小型纸箱',
+    length: 300,
+    width: 200,
+    height: 200,
+  },
+  {
+    uuid: nanoid(),
+    name: '中型纸箱',
+    length: 400,
+    width: 300,
+    height: 300,
+  },
+  {
+    uuid: nanoid(),
+    name: '大型纸箱',
+    length: 600,
+    width: 400,
+    height: 400,
+  },
+  {
+    uuid: nanoid(),
+    name: '特大型纸箱',
+    length: 800,
+    width: 600,
+    height: 600,
+  },
+]

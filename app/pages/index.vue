@@ -6,7 +6,7 @@ definePageMeta({
 
 <template>
   <div class="bg-gray-50 min-h-screen">
-    <div class="container mx-auto px-4 py-8 max-w-5xl">
+    <div class="container mx-auto px-4 py-8 max-w-5xl flex flex-col gap-8">
       <header class="text-center mb-12">
         <h1 class="text-[clamp(2rem,5vw,3rem)] font-bold text-neutral mb-4">
           货物装箱计算器
@@ -34,6 +34,12 @@ definePageMeta({
         prop="truck"
         name="货车"
         :default="defaultTruckSpecs"
+      ></SpecTable>
+
+      <SpecTable
+        prop="cargo"
+        name="货物"
+        :default="defaultCargoSpecs"
       ></SpecTable>
 
       <footer class="mt-12 text-center text-gray-500 text-sm">

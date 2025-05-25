@@ -137,7 +137,10 @@ const onSubmit = (event: FormSubmitEvent<Schema>) => {
     <template #header>
       <div class="flex items-center justify-between">
         <div class="flex items-center gap-2">
-          <UIcon name="lucide:truck" class="text-2xl text-primary" />
+          <UIcon
+            :name="prop === 'truck' ? 'lucide:truck' : 'lucide:box'"
+            class="text-2xl text-primary"
+          />
           <span class="text-xl font-semibold text-neutral">
             {{ props.name }}规格
           </span>
