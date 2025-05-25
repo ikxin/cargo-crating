@@ -16,6 +16,9 @@
     "@iconify-json/lucide": "^1.2.44",
     "@iconify-json/simple-icons": "^1.2.34",
     "@nuxt/ui": "^3.1.2",
+    "@vueuse/core": "^13.2.0",
+    "@vueuse/nuxt": "^13.2.0",
+    "nanoid": "^5.1.5",
     "nuxt": "^3.17.4"
   },
   "devDependencies": {
@@ -23,7 +26,7 @@
     "eslint": "^9.27.0",
     "typescript": "^5.8.3"
   },
-  "prettier":{
+  "prettier": {
     "singleQuote": true,
     "semi": false
   }

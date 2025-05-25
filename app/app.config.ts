@@ -9,7 +9,22 @@ export default defineAppConfig({
       defaultVariants: {
         // Set default button color to neutral
         // color: 'neutral'
-      }
-    }
-  }
+      },
+    },
+    card: {
+      slots: {
+        root: 'rounded-lg',
+        header: 'p-4 sm:px-6 border-b-0',
+        body: 'p-4 sm:p-2',
+        footer: 'p-4 sm:px-6',
+      },
+      variants: {
+        variant: {
+          outline: {
+            root: 'ring-0',
+          },
+        },
+      },
+    },
+  },
 })
