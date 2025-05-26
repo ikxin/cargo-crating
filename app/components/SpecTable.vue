@@ -37,7 +37,7 @@ const columns: TableColumn<SpecsType>[] = [
     id: 'actions',
     header: '操作',
     cell: ({ row }) => {
-      return h('div', { class: 'flex gap-2' }, [
+      return h('div', { class: 'flex gap-2 w-fit m-auto' }, [
         h(UButton, {
           color: 'neutral',
           icon: 'lucide:square-pen',
