@@ -38,6 +38,8 @@ export const defaultCargoSpecs: SpecsType[] = [
     length: 300,
     width: 200,
     height: 200,
+    nw: 5,
+    gw: 6,
   },
   {
     uuid: nanoid(),
@@ -45,6 +47,8 @@ export const defaultCargoSpecs: SpecsType[] = [
     length: 400,
     width: 300,
     height: 300,
+    nw: 10,
+    gw: 12,
   },
   {
     uuid: nanoid(),
@@ -52,6 +56,8 @@ export const defaultCargoSpecs: SpecsType[] = [
     length: 600,
     width: 400,
     height: 400,
+    nw: 20,
+    gw: 24,
   },
   {
     uuid: nanoid(),
@@ -59,5 +65,7 @@ export const defaultCargoSpecs: SpecsType[] = [
     length: 800,
     width: 600,
     height: 600,
+    nw: 40,
+    gw: 48,
   },
 ]

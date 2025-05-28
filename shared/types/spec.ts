@@ -4,4 +4,6 @@ export interface SpecsType {
   length: number
   width: number
   height: number
+  nw?: number
+  gw?: number
 }

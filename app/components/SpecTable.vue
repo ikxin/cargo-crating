@@ -22,16 +22,39 @@ const columns: TableColumn<SpecsType>[] = [
     accessorKey: 'name',
   },
   {
-    header: '长度 (mm)',
+    header: '长度',
     accessorKey: 'length',
+    cell: ({ row }) => {
+      return `${row.getValue('length')}mm`
+    },
   },
   {
-    header: '宽度 (mm)',
+    header: '宽度',
     accessorKey: 'width',
+    cell: ({ row }) => {
+      return `${row.getValue('width')}mm`
+    },
   },
   {
-    header: '高度 (mm)',
+    header: '高度',
     accessorKey: 'height',
+    cell: ({ row }) => {
+      return `${row.getValue('height')}mm`
+    },
+  },
+  {
+    header: '毛重',
+    accessorKey: 'gw',
+    cell: ({ row }) => {
+      return `${row.getValue('gw') || 0}kg`
+    },
+  },
+  {
+    header: '净重',
+    accessorKey: 'nw',
+    cell: ({ row }) => {
+      return `${row.getValue('nw') || 0}kg`
+    },
   },
   {
     id: 'actions',
@@ -59,23 +82,25 @@ const columns: TableColumn<SpecsType>[] = [
   },
 ]
 
-const schema = z.object({
-  uuid: z.string(),
-  name: z.string().min(1, '请输入名称'),
-  length: z.number().int().positive('长度必须为正数'),
-  width: z.number().int().positive('宽度必须为正数'),
-  height: z.number().int().positive('高度必须为正数'),
+const columnVisibility = computed(() => {
+  return props.prop === 'cargo' ? undefined : { gw: false, nw: false }
 })
+
+const schema = z.object({
+  uuid: z.string().default(() => nanoid()),
+  name: z.string().min(1, '请输入名称').default('默认名称'),
+  length: z.number().int().nonnegative('长度必须为非负数').default(0),
+  width: z.number().int().nonnegative('宽度必须为非负数').default(0),
+  height: z.number().int().nonnegative('高度必须为非负数').default(0),
+  nw: z.number().int().nonnegative('净重必须为非负数').default(0),
+  gw: z.number().int().nonnegative('毛重必须为非负数').default(0),
+})
+
+const defaultValues = schema.parse({})
 
 type Schema = z.output<typeof schema>
 
-const state = reactive<Partial<Schema>>({
-  uuid: nanoid(),
-  name: '',
-  length: 0,
-  width: 0,
-  height: 0,
-})
+const state = reactive<Schema>({ ...defaultValues })
 
 const formAttr = reactive({
   open: false,
@@ -88,12 +113,11 @@ const openAddForm = () => {
 }
 
 const resetForm = () => {
-  state.uuid = nanoid()
-  state.name = ''
-  state.length = 0
-  state.width = 0
-  state.height = 0
   formAttr.edit = false
+  Object.assign(state, {
+    ...defaultValues,
+    uuid: nanoid(),
+  })
 }
 
 const deleteItem = (uuid: string) => {
@@ -153,7 +177,11 @@ const onSubmit = (event: FormSubmitEvent<Schema>) => {
         </div>
       </div>
     </template>
-    <UTable :data="data" :columns="columns"></UTable>
+    <UTable
+      v-model:column-visibility="columnVisibility"
+      :data="data"
+      :columns="columns"
+    ></UTable>
   </UCard>
   <UModal
     v-model:open="formAttr.open"
@@ -166,21 +194,29 @@ const onSubmit = (event: FormSubmitEvent<Schema>) => {
         class="space-y-4"
         @submit="onSubmit"
       >
-        <UFormField label="名称" name="name" size="xl">
+        <UFormField label="名称" name="name">
           <UInput v-model="state.name" class="w-full" />
         </UFormField>
-        <UFormField label="长度 (mm)" name="length" size="xl">
+        <UFormField label="长度 (mm)" name="length">
           <UInputNumber v-model="state.length" class="w-full" />
         </UFormField>
-        <UFormField label="宽度 (mm)" name="width" size="xl">
+        <UFormField label="宽度 (mm)" name="width">
           <UInputNumber v-model="state.width" class="w-full" />
         </UFormField>
-        <UFormField label="高度 (mm)" name="height" size="xl">
+        <UFormField label="高度 (mm)" name="height">
           <UInputNumber v-model="state.height" class="w-full" />
         </UFormField>
+        <template v-if="props.prop === 'cargo'">
+          <UFormField label="净重 (kg)" name="nw">
+            <UInputNumber v-model="state.nw" class="w-full" />
+          </UFormField>
+          <UFormField label="毛重 (kg)" name="gw">
+            <UInputNumber v-model="state.gw" class="w-full" />
+          </UFormField>
+        </template>
         <div class="flex justify-end space-x-2">
           <UButton variant="ghost" @click="formAttr.open = false">取消</UButton>
-          <UButton type="submit" size="xl">提交</UButton>
+          <UButton type="submit">提交</UButton>
         </div>
       </UForm>
     </template>
