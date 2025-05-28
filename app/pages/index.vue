@@ -1,6 +1,7 @@
 <script lang="ts" setup>
 import { nanoid } from 'nanoid'
 import { useStorage } from '@vueuse/core'
+import type { TableColumn } from '@nuxt/ui'
 
 definePageMeta({
   colorMode: 'light',
@@ -35,7 +36,7 @@ type CargoType = {
   length?: number
   width?: number
   height?: number
-  place?: number
+  place?: 1 | 2 | 3 | 4 | 5 | 6
   remainingLength?: number
   remainingWidth?: number
   remainingHeight?: number
@@ -45,6 +46,8 @@ type CargoType = {
   rowLength?: number
   fixedBoxCount?: number
   fixedBoxLength?: number
+  nw?: number
+  gw?: number
 }
 
 const currentCargo = ref<CargoType[]>([
@@ -53,16 +56,14 @@ const currentCargo = ref<CargoType[]>([
   },
 ])
 
-const placeItem = [
-  {
-    label: '横向',
-    value: 1,
-  },
-  {
-    label: '顺向',
-    value: 2,
-  },
-]
+const placeItem = {
+  1: '横向平放',
+  2: '顺向平放',
+  3: '横向靠放',
+  4: '顺向靠放',
+  5: '横向立放',
+  6: '顺向立放',
+}
 
 const cargoChange = (index: number) => {
   const cargo = cargoData.value.find(
@@ -114,11 +115,109 @@ const fixedBoxCountChange = (index: number) => {
   cargo.fixedBoxLength = cargo.rowLength! * cargo.fixedBoxCount!
   currentCargo.value[index] = { ...cargo }
 }
+
+const columns: TableColumn<CargoType>[] = [
+  {
+    header: '货物规格',
+    accessorKey: 'name',
+  },
+  {
+    header: '摆放方式',
+    accessorKey: 'place',
+    cell: ({ row }) => {
+      const place = row.original.place!
+      return placeItem[place] || '未知'
+    },
+  },
+  {
+    header: '横箱数',
+    cell: ({ row }) => {
+      return row.original.rowCount! || 0
+    },
+  },
+  {
+    header: '纵箱数',
+    cell: ({ row }) => {
+      return row.original.columnCount! || 0
+    },
+  },
+  {
+    header: '每排箱数',
+    cell: ({ row }) => {
+      return row.original.rowCount! * row.original.columnCount! || 0
+    },
+  },
+  {
+    header: '最大排数',
+    cell: ({ row }) => {
+      return row.original.longCount! || 0
+    },
+  },
+  {
+    header: '最大箱数',
+    cell: ({ row }) => {
+      const { longCount, rowCount, columnCount } = row.original!
+      return longCount! * rowCount! * columnCount! || 0
+    },
+  },
+  {
+    header: '每排长度',
+    cell: ({ row }) => {
+      return row.original.rowLength || 0
+    },
+  },
+  {
+    header: '剩余长度',
+    cell: ({ row }) => {
+      return row.original.remainingLength || 0
+    },
+  },
+  {
+    header: '剩余宽度',
+    cell: ({ row }) => {
+      return row.original.remainingWidth || 0
+    },
+  },
+  {
+    header: '剩余高度',
+    cell: ({ row }) => {
+      return row.original.remainingHeight || 0
+    },
+  },
+  {
+    header: '每排净重',
+    cell: ({ row }) => {
+      const { nw, rowCount, columnCount } = row.original!
+      return (nw || 0) * (rowCount || 0) * (columnCount || 0)
+    },
+  },
+  {
+    header: '每排毛重',
+    cell: ({ row }) => {
+      const { gw, rowCount, columnCount } = row.original!
+      return (gw || 0) * (rowCount || 0) * (columnCount || 0)
+    },
+  },
+  {
+    header: '总净重',
+    cell: ({ row }) => {
+      const { nw, longCount, rowCount, columnCount } = row.original!
+      return (nw || 0) * (longCount || 0) * (rowCount || 0) * (columnCount || 0)
+    },
+  },
+  {
+    header: '总毛重',
+    cell: ({ row }) => {
+      const { gw, longCount, rowCount, columnCount } = row.original!
+      return (gw || 0) * (longCount || 0) * (rowCount || 0) * (columnCount || 0)
+    },
+  },
+]
 </script>
 
 <template>
   <div class="bg-gray-50 min-h-screen">
-    <div class="container mx-auto px-4 py-8 max-w-5xl flex flex-col gap-8">
+    <div class="container mx-auto px-4 py-8 max-w-8xl flex flex-col gap-8">
       <header class="text-center mb-12">
         <h1 class="text-[clamp(2rem,5vw,3rem)] font-bold text-neutral mb-4">
           货物装箱计算器
@@ -166,7 +265,7 @@ const fixedBoxCountChange = (index: number) => {
             添加货物
           </UButton>
           <div class="flex flex-col gap-4 text-base">
-            <template v-for="(item, index) in currentCargo" :key="index">
+            <template v-for="(item, index) in currentCargo" :key="item.uuid">
               <div class="flex gap-2">
                 <USelect
                   v-model="currentCargo[index]!.cargoUuid"
@@ -179,37 +278,30 @@ const fixedBoxCountChange = (index: number) => {
                 />
                 <USelectMenu
                   v-model="currentCargo[index]!.place"
-                  :items="placeItem"
+                  :items="
+                    Object.entries(placeItem).map(([value, label]) => ({
+                      value: Number(value),
+                      label,
+                    }))
+                  "
                   value-key="value"
                   placeholder="摆放方式"
                   class="w-28"
                   @change="placeChange(index)"
                 />
-                <UBadge :label="`每排长度：${item.rowLength || 0}`" />
-                <UBadge>
-                  每排箱数：{{
-                    (item.rowCount || 0) + ' x ' + (item.columnCount || 0)
-                  }}
-                </UBadge>
-                <UBadge :label="`最大排数：${item.longCount || 0}`" />
-                <UBadge>
-                  剩余：{{
-                    (item.remainingLength || 0) +
-                    ' x ' +
-                    (item.remainingWidth || 0) +
-                    ' x ' +
-                    (item.remainingHeight || 0)
-                  }}
-                </UBadge>
                 <UInputNumber
                   v-model="item.fixedBoxCount"
                   class="w-28"
                   @change="fixedBoxCountChange(index)"
                 />
                 <UBadge :label="`当前长度：${item.fixedBoxLength || 0}`" />
+                <UButton color="error" @click="currentCargo.splice(index, 1)">
+                  <UIcon name="lucide:trash-2" />
+                </UButton>
               </div>
             </template>
           </div>
+          <UTable :columns="columns" :data="currentCargo"></UTable>
         </div>
       </UCard>
 
