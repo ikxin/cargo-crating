@@ -75,7 +75,7 @@ const columns: TableColumn<SpecsType>[] = [
           icon: 'lucide:trash-2',
           color: 'error',
           variant: 'ghost',
-          onClick: () => deleteItem(row.original.uuid),
+          onClick: () => deleteItem(row.original.id),
         }),
       ])
     },
@@ -87,7 +87,7 @@ const columnVisibility = computed(() => {
 })
 
 const schema = z.object({
-  uuid: z.string().default(() => nanoid()),
+  id: z.string().default(() => nanoid()),
   name: z.string().min(1, '请输入名称').default('默认名称'),
   length: z.number().int().nonnegative('长度必须为非负数').default(0),
   width: z.number().int().nonnegative('宽度必须为非负数').default(0),
@@ -116,13 +116,13 @@ const resetForm = () => {
   formAttr.edit = false
   Object.assign(state, {
     ...defaultValues,
-    uuid: nanoid(),
+    id: nanoid(),
   })
 }
 
-const deleteItem = (uuid: string) => {
+const deleteItem = (id: string) => {
   if (confirm(`确定要删除此${props.name}规格吗？`)) {
-    const index = data.value.findIndex((item) => item.uuid === uuid)
+    const index = data.value.findIndex((item) => item.id === id)
     if (index !== -1) {
       data.value.splice(index, 1)
       toast.add({
@@ -135,7 +135,7 @@ const deleteItem = (uuid: string) => {
 
 const onSubmit = (event: FormSubmitEvent<Schema>) => {
   if (formAttr.edit) {
-    const index = data.value.findIndex((item) => item.uuid === state.uuid)
+    const index = data.value.findIndex((item) => item.id === state.id)
     if (index !== -1) {
       data.value[index] = { ...event.data }
       toast.add({
@@ -157,7 +157,7 @@ const onSubmit = (event: FormSubmitEvent<Schema>) => {
 </script>
 
 <template>
-  <UCard>
+  <UCard class="w-full overflow-hidden">
     <template #header>
       <div class="flex items-center justify-between">
         <div class="flex items-center gap-2">
