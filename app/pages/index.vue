@@ -18,8 +18,6 @@ const currentTruck = computed(() => {
 })
 
 const remainingLength = computed(() => {
-  console.log(1)
-
   let totalCargoLength = 0
   currentCargo.value.forEach((item) => {
     totalCargoLength += item?.mixedTotalLength || 0
@@ -36,10 +34,10 @@ const currentCargo = ref<CargoType[]>([])
 const placeItem = {
   1: '顺向平放',
   2: '横向平放',
-  3: '顺向靠放',
-  4: '横向靠放',
-  5: '顺向立放',
-  6: '横向立放',
+  3: '顺向靠放（不推荐）',
+  4: '横向靠放（不推荐）',
+  5: '顺向立放（不推荐）',
+  6: '横向立放（不推荐）',
 }
 
 const cargoChange = (index: number) => {
@@ -136,14 +134,65 @@ const columns: TableColumn<CargoType>[] = [
     },
   },
   {
-    header: '横箱数',
+    header: '混装排数',
+    accessorKey: 'mixedRowsCount',
+    cell: ({ row }) => {
+      return row.original.mixedRowsCount || 0
+    },
+  },
+  {
+    header: '混装长度',
+    accessorKey: 'mixedTotalLength',
+    cell: ({ row }) => {
+      return row.original.mixedTotalLength || 0
+    },
+  },
+  {
+    header: '混装箱数',
+    cell: ({ row }) => {
+      const { relativeWidth, relativeHeight, mixedRowsCount } = row.original!
+      return (
+        (mixedRowsCount || 0) *
+        (Math.floor(currentTruck.value!.width / relativeWidth!) || 0) *
+        (Math.floor(currentTruck.value!.height / relativeHeight!) || 0)
+      )
+    },
+  },
+  {
+    header: '混装净重',
+    cell: ({ row }) => {
+      const { relativeWidth, relativeHeight, netWeight, mixedRowsCount } =
+        row.original!
+      return (
+        (mixedRowsCount || 0) *
+        (netWeight || 0) *
+        (Math.floor(currentTruck.value!.width / relativeWidth!) || 0) *
+        (Math.floor(currentTruck.value!.height / relativeHeight!) || 0)
+      )
+    },
+  },
+  {
+    header: '混装毛重',
+    cell: ({ row }) => {
+      const { relativeWidth, relativeHeight, grossWeight, mixedRowsCount } =
+        row.original!
+      return (
+        (mixedRowsCount || 0) *
+        (grossWeight || 0) *
+        (Math.floor(currentTruck.value!.width / relativeWidth!) || 0) *
+        (Math.floor(currentTruck.value!.height / relativeHeight!) || 0)
+      )
+    },
+  },
+  {
+    header: '横向箱数',
     cell: ({ row }) => {
       const { relativeWidth } = row.original!
       return Math.floor(currentTruck.value!.width / relativeWidth!) || 0
     },
   },
   {
-    header: '纵箱数',
+    header: '横向箱数',
     cell: ({ row }) => {
       const { relativeHeight } = row.original!
       return Math.floor(currentTruck.value!.height / relativeHeight!) || 0
@@ -224,7 +273,7 @@ const columns: TableColumn<CargoType>[] = [
     },
   },
   {
-    header: '总净重',
+    header: '最大净重',
     cell: ({ row }) => {
       const { relativeWidth, relativeHeight, relativeLength, netWeight } =
         row.original!
@@ -237,7 +286,7 @@ const columns: TableColumn<CargoType>[] = [
     },
   },
   {
-    header: '总毛重',
+    header: '最大毛重',
     cell: ({ row }) => {
       const { relativeWidth, relativeHeight, relativeLength, grossWeight } =
         row.original!
@@ -257,6 +306,126 @@ const addCargo = () => {
     return
   }
   currentCargo.value.push({ id: nanoid() })
+}
+
+const exportTableData = () => {
+  if (!currentTruck.value || currentCargo.value.length === 0) {
+    alert('请先选择货车型号并添加货物')
+    return
+  }
+
+  const headers = columns.map((col) => String(col.header))
+
+  const exportData = [headers]
+
+  currentCargo.value.forEach((item) => {
+    if (!item.name) return
+
+    const row = [
+      item.name || '未选择',
+      placeItem[item.place!] || '未选择',
+      item.mixedRowsCount || 0,
+      item.mixedTotalLength || 0,
+      // 混装箱数计算
+      (item.mixedRowsCount || 0) *
+        (Math.floor(currentTruck.value!.width / (item.relativeWidth || 1)) ||
+          0) *
+        (Math.floor(currentTruck.value!.height / (item.relativeHeight || 1)) ||
+          0),
+      // 混装净重计算
+      (item.mixedRowsCount || 0) *
+        (item.netWeight || 0) *
+        (Math.floor(currentTruck.value!.width / (item.relativeWidth || 1)) ||
+          0) *
+        (Math.floor(currentTruck.value!.height / (item.relativeHeight || 1)) ||
+          0),
+      // 混装毛重计算
+      (item.mixedRowsCount || 0) *
+        (item.grossWeight || 0) *
+        (Math.floor(currentTruck.value!.width / (item.relativeWidth || 1)) ||
+          0) *
+        (Math.floor(currentTruck.value!.height / (item.relativeHeight || 1)) ||
+          0),
+      // 横箱数
+      Math.floor(currentTruck.value!.width / (item.relativeWidth || 1)) || 0,
+      // 纵箱数
+      Math.floor(currentTruck.value!.height / (item.relativeHeight || 1)) || 0,
+      // 每排箱数
+      (Math.floor(currentTruck.value!.width / (item.relativeWidth || 1)) || 0) *
+        (Math.floor(currentTruck.value!.height / (item.relativeHeight || 1)) ||
+          0),
+      // 最大排数
+      Math.floor(currentTruck.value!.length / (item.relativeLength || 1)) || 0,
+      // 最大箱数
+      (Math.floor(currentTruck.value!.length / (item.relativeLength || 1)) ||
+        0) *
+        (Math.floor(currentTruck.value!.width / (item.relativeWidth || 1)) ||
+          0) *
+        (Math.floor(currentTruck.value!.height / (item.relativeHeight || 1)) ||
+          0),
+      // 每排长度
+      item.relativeLength || 0,
+      // 剩余长度
+      currentTruck.value!.length % (item.relativeLength || 1),
+      // 剩余宽度
+      currentTruck.value!.width % (item.relativeWidth || 1),
+      // 剩余高度
+      currentTruck.value!.height % (item.relativeHeight || 1),
+      // 每排净重
+      (item.netWeight || 0) *
+        (Math.floor(currentTruck.value!.width / (item.relativeWidth || 1)) ||
+          0) *
+        (Math.floor(currentTruck.value!.height / (item.relativeHeight || 1)) ||
+          0),
+      // 每排毛重
+      (item.grossWeight || 0) *
+        (Math.floor(currentTruck.value!.width / (item.relativeWidth || 1)) ||
+          0) *
+        (Math.floor(currentTruck.value!.height / (item.relativeHeight || 1)) ||
+          0),
+      // 总净重
+      (item.netWeight || 0) *
+        (Math.floor(currentTruck.value!.length / (item.relativeLength || 1)) ||
+          0) *
+        (Math.floor(currentTruck.value!.width / (item.relativeWidth || 1)) ||
+          0) *
+        (Math.floor(currentTruck.value!.height / (item.relativeHeight || 1)) ||
+          0),
+      // 总毛重
+      (item.grossWeight || 0) *
+        (Math.floor(currentTruck.value!.length / (item.relativeLength || 1)) ||
+          0) *
+        (Math.floor(currentTruck.value!.width / (item.relativeWidth || 1)) ||
+          0) *
+        (Math.floor(currentTruck.value!.height / (item.relativeHeight || 1)) ||
+          0),
+    ]
+
+    exportData.push(row as string[])
+  })
+
+  const csvContent = exportData
+    .map((row) =>
+      row
+        .map((cell) =>
+          typeof cell === 'string' ? `"${cell.replace(/"/g, '""')}"` : cell
+        )
+        .join(',')
+    )
+    .join('\n')
+
+  const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
+  const url = URL.createObjectURL(blob)
+  const link = document.createElement('a')
+  link.setAttribute('href', url)
+  link.setAttribute(
+    'download',
+    `货车装箱计算_${new Date().toLocaleString()}.csv`
+  )
+  link.style.display = 'none'
+  document.body.appendChild(link)
+  link.click()
+  document.body.removeChild(link)
 }
 </script>
 
@@ -299,7 +468,13 @@ const addCargo = () => {
               />
             </div>
           </UFormField>
-          <UButton class="w-fit" @click="addCargo()">添加货物</UButton>
+          <div class="flex gap-4">
+            <UButton class="w-fit" @click="addCargo()">添加货物</UButton>
+            <UButton class="w-fit" @click="exportTableData">
+              <UIcon name="lucide:download" class="mr-2" />
+              导出表格
+            </UButton>
+          </div>
           <div class="flex flex-col gap-4 text-base">
             <template v-for="(item, index) in currentCargo" :key="item.uuid">
               <div class="flex gap-2">
@@ -308,7 +483,7 @@ const addCargo = () => {
                   value-key="id"
                   label-key="name"
                   :items="cargoData"
-                  class="w-28"
+                  class="w-48"
                   placeholder="货物规格"
                   @change="cargoChange(index)"
                 />
@@ -322,7 +497,7 @@ const addCargo = () => {
                   "
                   value-key="value"
                   placeholder="摆放方式"
-                  class="w-28"
+                  class="w-48"
                   @change="placeChange(index)"
                 />
                 <UInputNumber
@@ -330,7 +505,6 @@ const addCargo = () => {
                   class="w-28"
                   @change="fixedBoxCountChange(index)"
                 />
-                <UBadge :label="`当前长度：${item.mixedTotalLength || 0}`" />
                 <UButton color="error" @click="currentCargo.splice(index, 1)">
                   <UIcon name="lucide:trash-2" />
                 </UButton>
