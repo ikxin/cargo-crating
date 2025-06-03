@@ -44,16 +44,16 @@ const columns: TableColumn<SpecsType>[] = [
   },
   {
     header: '毛重',
-    accessorKey: 'gw',
+    accessorKey: 'grossWeight',
     cell: ({ row }) => {
-      return `${row.getValue('gw') || 0}kg`
+      return `${row.getValue('grossWeight') || 0}kg`
     },
   },
   {
     header: '净重',
-    accessorKey: 'nw',
+    accessorKey: 'netWeight',
     cell: ({ row }) => {
-      return `${row.getValue('nw') || 0}kg`
+      return `${row.getValue('netWeight') || 0}kg`
     },
   },
   {
@@ -83,7 +83,9 @@ const columns: TableColumn<SpecsType>[] = [
 ]
 
 const columnVisibility = computed(() => {
-  return props.prop === 'cargo' ? undefined : { gw: false, nw: false }
+  return props.prop === 'cargo'
+    ? undefined
+    : { grossWeight: false, netWeight: false }
 })
 
 const schema = z.object({
@@ -92,8 +94,8 @@ const schema = z.object({
   length: z.number().int().nonnegative('长度必须为非负数').default(0),
   width: z.number().int().nonnegative('宽度必须为非负数').default(0),
   height: z.number().int().nonnegative('高度必须为非负数').default(0),
-  nw: z.number().int().nonnegative('净重必须为非负数').default(0),
-  gw: z.number().int().nonnegative('毛重必须为非负数').default(0),
+  netWeight: z.number().int().nonnegative('净重必须为非负数').default(0),
+  grossWeight: z.number().int().nonnegative('毛重必须为非负数').default(0),
 })
 
 const defaultValues = schema.parse({})
@@ -207,11 +209,11 @@ const onSubmit = (event: FormSubmitEvent<Schema>) => {
           <UInputNumber v-model="state.height" class="w-full" />
         </UFormField>
         <template v-if="props.prop === 'cargo'">
-          <UFormField label="净重 (kg)" name="nw">
-            <UInputNumber v-model="state.nw" class="w-full" />
+          <UFormField label="净重 (kg)" name="netWeight">
+            <UInputNumber v-model="state.netWeight" class="w-full" />
           </UFormField>
-          <UFormField label="毛重 (kg)" name="gw">
-            <UInputNumber v-model="state.gw" class="w-full" />
+          <UFormField label="毛重 (kg)" name="grossWeight">
+            <UInputNumber v-model="state.grossWeight" class="w-full" />
           </UFormField>
         </template>
         <div class="flex justify-end space-x-2">
