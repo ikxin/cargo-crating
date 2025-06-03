@@ -43,17 +43,17 @@ const columns: TableColumn<SpecsType>[] = [
     },
   },
   {
-    header: '毛重',
-    accessorKey: 'grossWeight',
-    cell: ({ row }) => {
-      return `${row.getValue('grossWeight') || 0}kg`
-    },
-  },
-  {
     header: '净重',
     accessorKey: 'netWeight',
     cell: ({ row }) => {
       return `${row.getValue('netWeight') || 0}kg`
+    },
+  },
+  {
+    header: '毛重',
+    accessorKey: 'grossWeight',
+    cell: ({ row }) => {
+      return `${row.getValue('grossWeight') || 0}kg`
     },
   },
   {
@@ -94,8 +94,8 @@ const schema = z.object({
   length: z.number().int().nonnegative('长度必须为非负数').default(0),
   width: z.number().int().nonnegative('宽度必须为非负数').default(0),
   height: z.number().int().nonnegative('高度必须为非负数').default(0),
-  netWeight: z.number().int().nonnegative('净重必须为非负数').default(0),
-  grossWeight: z.number().int().nonnegative('毛重必须为非负数').default(0),
+  netWeight: z.number().nonnegative('净重必须为非负数').default(0),
+  grossWeight: z.number().nonnegative('毛重必须为非负数').default(0),
 })
 
 const defaultValues = schema.parse({})
@@ -210,10 +210,18 @@ const onSubmit = (event: FormSubmitEvent<Schema>) => {
         </UFormField>
         <template v-if="props.prop === 'cargo'">
           <UFormField label="净重 (kg)" name="netWeight">
-            <UInputNumber v-model="state.netWeight" class="w-full" />
+            <UInputNumber
+              v-model="state.netWeight"
+              :step="0.1"
+              class="w-full"
+            />
           </UFormField>
           <UFormField label="毛重 (kg)" name="grossWeight">
-            <UInputNumber v-model="state.grossWeight" class="w-full" />
+            <UInputNumber
+              v-model="state.grossWeight"
+              :step="0.1"
+              class="w-full"
+            />
           </UFormField>
         </template>
         <div class="flex justify-end space-x-2">
