@@ -149,6 +149,12 @@ const columns: TableColumn<CargoType>[] = [
   },
   {
     header: '混装箱数',
+    meta: {
+      class: {
+        th: 'bg-yellow-300',
+        td: 'bg-yellow-300',
+      },
+    },
     cell: ({ row }) => {
       const { relativeWidth, relativeHeight, mixedRowsCount } = row.original!
       return (
@@ -200,6 +206,12 @@ const columns: TableColumn<CargoType>[] = [
   },
   {
     header: '每排箱数',
+    meta: {
+      class: {
+        th: 'bg-yellow-300',
+        td: 'bg-yellow-300',
+      },
+    },
     cell: ({ row }) => {
       const { relativeWidth, relativeHeight } = row.original!
       return (
@@ -511,7 +523,7 @@ const exportTableData = () => {
               </div>
             </template>
           </div>
-          <UTable :columns="columns" :data="currentCargo"></UTable>
+          <UTable :columns="columns" :data="currentCargo"> </UTable>
         </div>
       </UCard>
 
