@@ -151,8 +151,8 @@ const columns: TableColumn<CargoType>[] = [
     header: '混装箱数',
     meta: {
       class: {
-        th: 'bg-yellow-300',
-        td: 'bg-yellow-300',
+        th: 'bg-yellow-100',
+        td: 'bg-yellow-100',
       },
     },
     cell: ({ row }) => {
@@ -208,8 +208,8 @@ const columns: TableColumn<CargoType>[] = [
     header: '每排箱数',
     meta: {
       class: {
-        th: 'bg-yellow-300',
-        td: 'bg-yellow-300',
+        th: 'bg-yellow-100',
+        td: 'bg-yellow-100',
       },
     },
     cell: ({ row }) => {
@@ -443,16 +443,7 @@ const exportTableData = () => {
 
 <template>
   <div class="bg-gray-50 min-h-screen">
-    <div class="container mx-auto px-4 py-8 flex flex-col gap-8">
-      <header class="text-center mb-12">
-        <h1 class="text-[clamp(2rem,5vw,3rem)] font-bold text-neutral mb-4">
-          货物装箱计算器
-        </h1>
-        <p class="text-gray-600 text-lg max-w-2xl mx-auto">
-          快速计算不同货车型号可装载的标准箱数量，支持多种规格混合装箱
-        </p>
-      </header>
-
+    <div class="mx-auto px-4 py-8 flex flex-col gap-8">
       <UCard>
         <template #header>
           <div class="flex gap-2">
@@ -534,7 +525,7 @@ const exportTableData = () => {
                 <img
                   v-if="currentCargo[index]?.place"
                   :src="`/${currentCargo[index]?.place}.png`"
-                  class="rounded-md h-10 object-cover hover:scale-500 hover:z-20 transition-transform duration-200 z-10"
+                  class="rounded h-10 object-cover hover:scale-400 hover:z-20 transition-transform duration-300 z-10"
                 />
               </div>
             </template>
@@ -556,10 +547,6 @@ const exportTableData = () => {
           :default="defaultCargoSpecs"
         ></SpecTable>
       </div>
-
-      <footer class="mt-12 text-center text-gray-500 text-sm">
-        <p>货车装箱计算器 &copy; 2025 | 物流优化工具</p>
-      </footer>
     </div>
   </div>
 </template>
