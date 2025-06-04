@@ -489,7 +489,7 @@ const exportTableData = () => {
           </div>
           <div class="flex flex-col gap-4 text-base">
             <template v-for="(item, index) in currentCargo" :key="item.uuid">
-              <div class="flex gap-2">
+              <div class="flex gap-2 items-center h-10">
                 <USelect
                   v-model="currentCargo[index]!.cargoId"
                   value-key="id"
@@ -499,17 +499,24 @@ const exportTableData = () => {
                   placeholder="货物规格"
                   @change="cargoChange(index)"
                 />
-                <USelectMenu
+                <USelect
                   v-model="currentCargo[index]!.place"
                   :items="
                     Object.entries(placeItem).map(([value, label]) => ({
                       value: Number(value),
                       label,
+                      avatar: {
+                        src: `/${value}.png`,
+                      },
                     }))
                   "
                   value-key="value"
                   placeholder="摆放方式"
-                  class="w-48"
+                  class="w-58"
+                  :ui="{
+                    itemLeadingAvatar: 'rounded-md',
+                    itemLeadingAvatarSize: 'xl',
+                  }"
                   @change="placeChange(index)"
                 />
                 <UInputNumber
@@ -517,9 +524,18 @@ const exportTableData = () => {
                   class="w-28"
                   @change="fixedBoxCountChange(index)"
                 />
-                <UButton color="error" @click="currentCargo.splice(index, 1)">
+                <UButton
+                  size="xl"
+                  color="error"
+                  @click="currentCargo.splice(index, 1)"
+                >
                   <UIcon name="lucide:trash-2" />
                 </UButton>
+                <img
+                  v-if="currentCargo[index]?.place"
+                  :src="`/${currentCargo[index]?.place}.png`"
+                  class="rounded-md h-10 object-cover hover:scale-500 hover:z-20 transition-transform duration-200 z-10"
+                />
               </div>
             </template>
           </div>
