@@ -29,6 +29,66 @@ const remainingLength = computed(() => {
   }
 })
 
+const totalMixedBoxes = computed(() => {
+  if (!currentTruck.value) return 0
+
+  return currentCargo.value.reduce((total, item) => {
+    if (!item.relativeWidth || !item.relativeHeight || !item.mixedRowsCount)
+      return total
+
+    const boxesPerLayer =
+      Math.floor(currentTruck.value!.width / item.relativeWidth!) *
+      Math.floor(currentTruck.value!.height / item.relativeHeight!)
+
+    return total + (item.mixedRowsCount || 0) * boxesPerLayer
+  }, 0)
+})
+
+const totalNetWeight = computed(() => {
+  if (!currentTruck.value) return 0
+
+  return currentCargo.value.reduce((total, item) => {
+    if (
+      !item.relativeWidth ||
+      !item.relativeHeight ||
+      !item.mixedRowsCount ||
+      !item.netWeight
+    )
+      return total
+
+    const boxesPerLayer =
+      Math.floor(currentTruck.value!.width / item.relativeWidth!) *
+      Math.floor(currentTruck.value!.height / item.relativeHeight!)
+
+    return (
+      total + (item.mixedRowsCount || 0) * boxesPerLayer * (item.netWeight || 0)
+    )
+  }, 0)
+})
+
+const totalGrossWeight = computed(() => {
+  if (!currentTruck.value) return 0
+
+  return currentCargo.value.reduce((total, item) => {
+    if (
+      !item.relativeWidth ||
+      !item.relativeHeight ||
+      !item.mixedRowsCount ||
+      !item.grossWeight
+    )
+      return total
+
+    const boxesPerLayer =
+      Math.floor(currentTruck.value!.width / item.relativeWidth!) *
+      Math.floor(currentTruck.value!.height / item.relativeHeight!)
+
+    return (
+      total +
+      (item.mixedRowsCount || 0) * boxesPerLayer * (item.grossWeight || 0)
+    )
+  }, 0)
+})
+
 const currentCargo = ref<CargoType[]>([])
 
 const placeItem = {
@@ -123,14 +183,9 @@ const columns: TableColumn<CargoType>[] = [
     header: '货物规格',
     accessorKey: 'name',
     cell: ({ row }) => {
-      return row.original.name ? row.original.name : '未选择'
-    },
-  },
-  {
-    header: '摆放方式',
-    accessorKey: 'place',
-    cell: ({ row }) => {
-      return placeItem[row.original.place!] || '未选择'
+      return `${row.original.name ? row.original.name : '未选择'}（${
+        placeItem[row.original.place!] || '未选择'
+      }）`
     },
   },
   {
@@ -174,7 +229,7 @@ const columns: TableColumn<CargoType>[] = [
         (netWeight || 0) *
         (Math.floor(currentTruck.value!.width / relativeWidth!) || 0) *
         (Math.floor(currentTruck.value!.height / relativeHeight!) || 0)
-      )
+      ).toFixed(2)
     },
   },
   {
@@ -187,7 +242,7 @@ const columns: TableColumn<CargoType>[] = [
         (grossWeight || 0) *
         (Math.floor(currentTruck.value!.width / relativeWidth!) || 0) *
         (Math.floor(currentTruck.value!.height / relativeHeight!) || 0)
-      )
+      ).toFixed(2)
     },
   },
   {
@@ -311,6 +366,10 @@ const columns: TableColumn<CargoType>[] = [
     },
   },
 ]
+
+const columnPinning = ref({
+  left: ['name'],
+})
 
 const addCargo = () => {
   if (!currentTruck.value) {
@@ -462,13 +521,18 @@ const exportTableData = () => {
                 class="w-48"
                 placeholder="选择货车型号"
               />
-              <UInput :model-value="currentTruck?.length" class="w-16" />
-              <UInput :model-value="currentTruck?.width" class="w-16" />
-              <UInput :model-value="currentTruck?.height" class="w-16" />
               <UBadge
-                :label="`剩余长度：${remainingLength}`"
+                :label="`长 ${currentTruck?.length || 0}mm 宽 ${
+                  currentTruck?.width || 0
+                }mm 高 ${currentTruck?.height || 0}mm`"
+              />
+              <UBadge
+                :label="`剩余长度：${remainingLength}mm`"
                 :color="remainingLength >= 0 ? 'primary' : 'error'"
               />
+              <UBadge :label="`总箱数：${totalMixedBoxes} 箱`" />
+              <UBadge :label="`总净重：${totalNetWeight.toFixed(2)}kg`" />
+              <UBadge :label="`总毛重：${totalGrossWeight.toFixed(2)}kg`" />
             </div>
           </UFormField>
           <div class="flex gap-4">
@@ -481,14 +545,29 @@ const exportTableData = () => {
           <div class="flex flex-col gap-4 text-base">
             <template v-for="(item, index) in currentCargo" :key="item.uuid">
               <div class="flex gap-2 items-center h-10">
-                <USelect
+                <USelectMenu
                   v-model="currentCargo[index]!.cargoId"
                   value-key="id"
                   label-key="name"
                   :items="cargoData"
+                  :search-input="{
+                    placeholder: '搜索...',
+                  }"
                   class="w-48"
                   placeholder="货物规格"
                   @change="cargoChange(index)"
+                />
+                <UBadge
+                  class="h-8"
+                  :label="`长 ${currentCargo[index]?.length || 0}mm 宽 ${
+                    currentCargo[index]?.width || 0
+                  }mm 高 ${currentCargo[index]?.height || 0}mm`"
+                />
+                <UBadge
+                  class="h-8"
+                  :label="`净重 ${currentCargo[index]?.netWeight || 0}kg 毛重 ${
+                    currentCargo[index]?.grossWeight || 0
+                  }kg`"
                 />
                 <USelect
                   v-model="currentCargo[index]!.place"
@@ -510,10 +589,30 @@ const exportTableData = () => {
                   }"
                   @change="placeChange(index)"
                 />
+                <template v-if="currentCargo[index]?.place">
+                  <img
+                    :src="`/${currentCargo[index]?.place}.png`"
+                    class="rounded h-10 object-cover hover:scale-400 hover:z-20 transition-transform duration-300 z-10"
+                  />
+                </template>
                 <UInputNumber
                   v-model="item.mixedRowsCount"
                   class="w-28"
+                  :min="0"
                   @change="fixedBoxCountChange(index)"
+                />
+                <UBadge
+                  class="h-8"
+                  :label="`每排 ${(
+                      (Math.floor(currentTruck!.width / item?.relativeWidth!) || 0) *
+                      (Math.floor(currentTruck!.height / item?.relativeHeight!) || 0)
+                    )} 箱 
+                    混装箱数 ${(
+                      (item?.mixedRowsCount || 0) *
+                      (Math.floor(currentTruck!.width /item?.relativeWidth!) || 0) *
+                      (Math.floor(currentTruck!.height / item?.relativeHeight!) || 0)
+                    )} 箱
+                  `"
                 />
                 <UButton
                   size="xl"
@@ -522,15 +621,15 @@ const exportTableData = () => {
                 >
                   <UIcon name="lucide:trash-2" />
                 </UButton>
-                <img
-                  v-if="currentCargo[index]?.place"
-                  :src="`/${currentCargo[index]?.place}.png`"
-                  class="rounded h-10 object-cover hover:scale-400 hover:z-20 transition-transform duration-300 z-10"
-                />
               </div>
             </template>
           </div>
-          <UTable :columns="columns" :data="currentCargo"> </UTable>
+          <UTable
+            v-model:column-pinning="columnPinning"
+            :columns="columns"
+            :data="currentCargo"
+          >
+          </UTable>
         </div>
       </UCard>
 

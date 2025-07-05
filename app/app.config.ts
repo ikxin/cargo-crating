@@ -31,6 +31,14 @@ export default defineAppConfig({
         th: 'whitespace-nowrap text-center',
         td: 'text-center',
       },
+      variants: {
+        pinned: {
+          true: {
+            th: 'bg-default',
+            td: 'bg-default',
+          },
+        },
+      },
     },
   },
 })
