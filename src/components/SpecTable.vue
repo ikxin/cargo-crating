@@ -55,37 +55,31 @@ const deleteRecord = (record) => {
     <template #default>
       <ATable :data="database[props.prop]">
         <template #columns>
-          <ATableColumn
-            title="名称"
-            dataIndex="name"
-            align="center"
-          ></ATableColumn>
-          <ATableColumn
-            title="长度"
-            dataIndex="length"
-            align="center"
-          ></ATableColumn>
-          <ATableColumn
-            title="宽度"
-            dataIndex="width"
-            align="center"
-          ></ATableColumn>
-          <ATableColumn
-            title="高度"
-            dataIndex="height"
-            align="center"
-          ></ATableColumn>
+          <ATableColumn title="名称" dataIndex="name" align="center">
+            <template #cell="{ record }">
+              {{ record.name }}
+            </template>
+          </ATableColumn>
+          <ATableColumn title="长度" dataIndex="length" align="center">
+            <template #cell="{ record }"> {{ record.length }}mm </template>
+          </ATableColumn>
+          <ATableColumn title="宽度" dataIndex="width" align="center">
+            <template #cell="{ record }"> {{ record.width }}mm </template>
+          </ATableColumn>
+          <ATableColumn title="高度" dataIndex="height" align="center">
+            <template #cell="{ record }"> {{ record.height }}mm </template>
+          </ATableColumn>
           <template v-if="props.prop === 'cargo'">
-            <ATableColumn
-              title="净重"
-              dataIndex="netWeight"
-              align="center"
-            ></ATableColumn>
-            <ATableColumn
-              title="毛重"
-              dataIndex="grossWeight"
-              align="center"
-            ></ATableColumn>
+            <ATableColumn title="净重" dataIndex="netWeight" align="center">
+              <template #cell="{ record }">
+                {{ record.netWeight.toFixed(1) }}kg
+              </template>
+            </ATableColumn>
+            <ATableColumn title="毛重" dataIndex="grossWeight" align="center">
+              <template #cell="{ record }">
+                {{ record.grossWeight.toFixed(1) }}kg
+              </template>
+            </ATableColumn>
           </template>
           <ATableColumn title="操作" align="center">
             <template #cell="{ record }">
