@@ -121,9 +121,3 @@ const handleClose = () => {
     </AForm>
   </AModal>
 </template>
-
-<style scoped>
-:deep(.arco-input-wrapper > .arco-input) {
-  text-align: center;
-}
-</style>
