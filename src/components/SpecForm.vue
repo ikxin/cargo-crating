@@ -44,27 +44,86 @@ const handleSubmit = (done) => {
     }
   })
 }
+
+const handleClose = () => {
+  formRef.value.resetFields()
+}
 </script>
 
 <template>
-  <AModal :title="edit ? '编辑规格' : '添加规格'" @before-ok="handleSubmit">
-    <AForm ref="form" :model="data">
-      <AFormItem
-        label="名称"
-        field="name"
-        :rules="{ required: true, message: 'name is required' }"
-      >
+  <AModal
+    :title="edit ? '编辑规格' : '添加规格'"
+    :width="360"
+    @before-ok="handleSubmit"
+    @close="handleClose"
+  >
+    <AForm ref="form" :model="data" auto-label-width>
+      <AFormItem label="名称" field="name" :rules="{ required: true }">
         <AInput v-model="data.name" />
       </AFormItem>
-      <AFormItem label="长度" field="length">
-        <AInput v-model="data.length" />
+      <AFormItem label="长度" field="length" :rules="{ required: true }">
+        <AInputNumber
+          v-model="data.length"
+          id="length"
+          :min="0"
+          :max="100000"
+          :formatter="(n) => `${n}mm`"
+          :parser="(n) => Number(n.replace('mm', ''))"
+          mode="button"
+        />
       </AFormItem>
-      <AFormItem label="宽度" field="width">
-        <AInput v-model="data.width" />
+      <AFormItem label="宽度" field="width" :rules="{ required: true }">
+        <AInputNumber
+          v-model="data.width"
+          :min="0"
+          :max="100000"
+          :formatter="(n) => `${n}mm`"
+          :parser="(n) => Number(n.replace('mm', ''))"
+          mode="button"
+        />
       </AFormItem>
-      <AFormItem label="高度" field="height">
-        <AInput v-model="data.height" />
+      <AFormItem label="高度" field="height" :rules="{ required: true }">
+        <AInputNumber
+          v-model="data.height"
+          :min="0"
+          :max="100000"
+          :formatter="(n) => `${n}mm`"
+          :parser="(n) => Number(n.replace('mm', ''))"
+          mode="button"
+        />
       </AFormItem>
+      <template v-if="prop === 'cargo'">
+        <AFormItem label="净重" field="netWeight" :rules="{ required: true }">
+          <AInputNumber
+            v-model="data.netWeight"
+            :min="0"
+            :max="100000"
+            :step="0.01"
+            :precision="2"
+            :formatter="(n) => `${n}kg`"
+            :parser="(n) => Number(n.replace('kg', ''))"
+            mode="button"
+          />
+        </AFormItem>
+        <AFormItem label="毛重" field="grossWeight" :rules="{ required: true }">
+          <AInputNumber
+            v-model="data.grossWeight"
+            :min="0"
+            :max="100000"
+            :step="0.01"
+            :precision="2"
+            :formatter="(n) => `${n}kg`"
+            :parser="(n) => Number(n.replace('kg', ''))"
+            mode="button"
+          />
+        </AFormItem>
+      </template>
     </AForm>
   </AModal>
 </template>
+
+<style scoped>
+:deep(.arco-input-wrapper > .arco-input) {
+  text-align: center;
+}
+</style>
