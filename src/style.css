@@ -7,3 +7,14 @@
 .arco-input-number-mode-button > .arco-input-wrapper > .arco-input {
   text-align: center;
 }
+
+.arco-timeline-item-content {
+  margin-bottom: 0;
+}
+
+.arco-timeline-item-content-wrapper {
+  display: flex;
+  flex-direction: row-reverse;
+  gap: 8px;
+  align-items: center;
+}
