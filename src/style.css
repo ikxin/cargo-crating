@@ -12,9 +12,10 @@
   margin-bottom: 0;
 }
 
-.arco-timeline-item-content-wrapper {
-  display: flex;
-  flex-direction: row-reverse;
-  gap: 8px;
-  align-items: center;
+.arco-timeline-item {
+  min-height: 32px;
+}
+
+.arco-table-td-content {
+  text-wrap: nowrap;
 }
