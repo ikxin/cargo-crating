@@ -1,5 +1,5 @@
 <script setup>
-import { ref } from 'vue'
+import { nextTick, ref, useTemplateRef } from 'vue'
 import { useStorage, promiseTimeout } from '@vueuse/core'
 
 const database = useStorage('cargo-crating-database', {
@@ -7,9 +7,14 @@ const database = useStorage('cargo-crating-database', {
   cargo: [],
 })
 
+const formRef = useTemplateRef('form')
+
+const timelineRef = useTemplateRef('timeline')
+
 const cargoData = ref([
   {
     id: crypto.randomUUID(),
+    total: 100,
   },
 ])
 
@@ -19,8 +24,8 @@ const selectChange = (index) => {
   )
   if (cargo) {
     cargoData.value[index] = {
-      ...cargoData.value[index],
       ...cargo,
+      ...cargoData.value[index],
     }
   }
 }
@@ -34,9 +39,20 @@ const logData = ref([
   },
 ])
 
+const addCargo = async () => {
+  cargoData.value.push({
+    id: crypto.randomUUID(),
+    total: 100,
+  })
+  await nextTick()
+  formRef.value.scrollTop(100000)
+}
+
 const addLogRecord = async (content) => {
   await promiseTimeout(400)
   logData.value.push({ time: new Date().toLocaleString(), content })
+  await nextTick()
+  timelineRef.value.scrollTop(100000)
 }
 
 const startCalculation = async () => {
@@ -135,57 +151,71 @@ const startCalculation = async () => {
 </script>
 
 <template>
-  <ASpace class="!items-start">
+  <ASpace class="w-full !items-start">
     <template #split>
       <ADivider direction="vertical" class="text-6xl" />
     </template>
 
     <div class="flex flex-col gap-2">
-      <AButton type="primary" @click="cargoData.push({})">添加货物</AButton>
+      <AButton type="primary" @click="addCargo">添加货物</AButton>
       <AButton @click="startCalculation">开始计算</AButton>
     </div>
 
-    <div class="flex flex-col gap-2">
-      <template v-for="(cargo, index) in cargoData" :key="cargo.id">
-        <ASpace>
-          <ASelect
-            v-model="cargo.cargoId"
-            allow-clear
-            allow-search
-            placeholder="选择货物"
-            class="!w-36"
-            @change="selectChange(index)"
-          >
-            <template v-for="item in database.cargo" :key="item.id">
-              <AOption :value="item.id" :label="item.name" />
-            </template>
-          </ASelect>
-          <AInputNumber
-            v-model="cargo.total"
-            :min="0"
-            :max="100000"
-            mode="button"
-            placeholder="总箱数"
-            class="!w-36"
-          />
-          <AButton
-            @click="cargoData.splice(index, 1)"
-            type="primary"
-            status="danger"
-          >
-            删除
-          </AButton>
-        </ASpace>
-      </template>
-    </div>
+    <AScrollbar ref="form" class="h-56 overflow-auto">
+      <div class="flex flex-col gap-2 pr-4">
+        <template v-for="(cargo, index) in cargoData" :key="cargo.id">
+          <ASpace>
+            <ASelect
+              v-model="cargo.cargoId"
+              allow-clear
+              allow-search
+              placeholder="选择货物"
+              class="!w-36"
+              @change="selectChange(index)"
+            >
+              <template v-for="item in database.cargo" :key="item.id">
+                <AOption :value="item.id" :label="item.name" />
+              </template>
+            </ASelect>
+            <AInputNumber
+              v-model="cargo.total"
+              :min="0"
+              :max="100000"
+              mode="button"
+              placeholder="总箱数"
+              class="!w-36"
+            />
+            <AButton
+              @click="cargoData.splice(index, 1)"
+              type="primary"
+              status="danger"
+            >
+              删除
+            </AButton>
+          </ASpace>
+        </template>
+      </div>
+    </AScrollbar>
 
-    <ATimeline>
-      <ATimelineItem v-for="(log, index) in logData" :key="index">
-        <div class="flex items-center gap-2">
-          <span class="arco-timeline-item-label">{{ log.time }}</span>
-          <span class="arco-timeline-item-content">{{ log.content }}</span>
-        </div>
-      </ATimelineItem>
-    </ATimeline>
+    <AScrollbar ref="timeline" class="h-56 w-full overflow-auto">
+      <ATimeline>
+        <ATimelineItem v-for="(log, index) in logData" :key="index">
+          <div class="flex items-center gap-2">
+            <span class="arco-timeline-item-label">{{ log.time }}</span>
+            <span class="arco-timeline-item-content">{{ log.content }}</span>
+          </div>
+        </ATimelineItem>
+      </ATimeline>
+    </AScrollbar>
   </ASpace>
 </template>
+
+<style scoped>
+:deep(.arco-space-item:last-child) {
+  flex-grow: 1;
+}
+
+:deep(.arco-space-item:last-child > .arco-scrollbar) {
+  width: 100%;
+}
+</style>
