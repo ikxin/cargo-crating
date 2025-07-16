@@ -87,11 +87,6 @@ const startCalculation = async () => {
       // 货物长度
       const cargoLength = layerNeeded * layerLength
 
-      if (cargoLength > truck.length) {
-        await addLogRecord(`${truck.name} 长度不足，至少需要 ${cargoLength}mm`)
-        break
-      }
-
       cargoResult.push({
         ...cargo,
         rowCount,
