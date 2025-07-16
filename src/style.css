@@ -16,6 +16,10 @@
   margin-bottom: 0;
 }
 
+.arco-table-th-title {
+  text-wrap: nowrap;
+}
+
 .arco-table-td-content {
   text-wrap: nowrap;
 }

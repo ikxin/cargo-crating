@@ -1,4 +1,5 @@
 <script setup>
+import CratingDetail from '../components/CratingDetail.vue'
 import { nextTick, ref, useTemplateRef } from 'vue'
 import { useStorage, promiseTimeout } from '@vueuse/core'
 
@@ -49,7 +50,7 @@ const addCargo = async () => {
 }
 
 const addLogRecord = async (content) => {
-  await promiseTimeout(400)
+  await promiseTimeout(200)
   logData.value.push({ time: new Date().toLocaleString(), content })
   await nextTick()
   timelineRef.value.scrollTop(100000)
@@ -135,7 +136,6 @@ const startCalculation = async () => {
   const targetTruck = truckResult[index]
 
   if (targetTruck) {
-    targetCargo.value = targetTruck.cargo
     await addLogRecord(
       `最佳装载方案为 ${targetTruck.name}，剩余空间 ${freeLenght[index]}mm`,
     )
@@ -144,6 +144,7 @@ const startCalculation = async () => {
         `${cargo.name} ${cargo.placement === 'A' ? '顺向摆放' : '横向摆放'}，每排可放 ${cargo.layerCount} 箱，${cargo.total} 箱需要使用 ${cargo.layerNeeded} 排，使用长度 ${cargo.cargoLength}mm`,
       )
     }
+    targetCargo.value = targetTruck.cargo
   } else {
     await addLogRecord('没有找到合适的装载方案')
   }
@@ -151,7 +152,7 @@ const startCalculation = async () => {
 </script>
 
 <template>
-  <ASpace class="w-full !items-start">
+  <ASpace class="mb-4 w-full !items-start">
     <template #split>
       <ADivider direction="vertical" class="text-6xl" />
     </template>
@@ -208,6 +209,7 @@ const startCalculation = async () => {
       </ATimeline>
     </AScrollbar>
   </ASpace>
+  <CratingDetail :cargo="targetCargo" />
 </template>
 
 <style scoped>
