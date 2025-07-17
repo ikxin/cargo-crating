@@ -7,7 +7,7 @@ import SpecTable from './components/SpecTable.vue'
 <template>
   <AScrollbar class="h-screen w-screen overflow-auto">
     <div class="flex flex-col gap-4 p-4">
-      <ATabs default-active-key="2" type="capsule" size="large">
+      <ATabs default-active-key="1" type="capsule" size="large">
         <ATabPane key="1" title="货车模式">
           <TruckMode />
         </ATabPane>

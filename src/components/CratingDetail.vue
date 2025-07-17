@@ -170,13 +170,6 @@ const columns = [
 
 <template>
   <ACard title="装箱明细">
-    <ATable
-      :columns
-      :data="cargoData"
-      :scroll="{
-        x: 2100,
-        y: 1000,
-      }"
-    ></ATable>
+    <ATable :columns :data="cargoData"></ATable>
   </ACard>
 </template>

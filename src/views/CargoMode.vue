@@ -18,7 +18,6 @@ const cargoData = ref([
 
 const selectChange = (index, value) => {
   const cargo = database.value.cargo.find((item) => item.id === value)
-
   cargoData.value[index] = {
     ...cargoData.value[index],
     ...cargo,
@@ -36,13 +35,13 @@ const addCargo = async () => {
   })
 }
 
-const startCalculation = async () => {
+const startCalculation = () => {
   const truckResult = []
 
-  for await (const truck of database.value.truck) {
+  for (const truck of database.value.truck) {
     const cargoResult = []
 
-    for await (let cargo of cargoData.value) {
+    for (let cargo of cargoData.value) {
       if (!cargo.cargoId || !cargo.needBoxCount) {
         continue
       }

@@ -1,11 +1,15 @@
 @import 'tailwindcss';
 
+body {
+  user-select: none;
+}
+
 .arco-input-number-mode-button > .arco-input-wrapper > .arco-input {
   text-align: center;
 }
 
 .arco-tabs-nav-type-capsule .arco-tabs-nav-tab:not(.arco-tabs-nav-tab-scroll) {
-  justify-content: flex-start;
+  justify-content: center;
 }
 
 .arco-timeline-item {
@@ -19,4 +23,12 @@
 .arco-table-th-title,
 .arco-table-td-content {
   text-wrap: nowrap;
+}
+
+.arco-select-dropdown-list-wrapper {
+  max-height: 360px;
+}
+
+.arco-select-dropdown .arco-select-option-content {
+  flex-grow: 1;
 }
