@@ -15,7 +15,7 @@ const timelineRef = useTemplateRef('timeline')
 const cargoData = ref([
   {
     id: crypto.randomUUID(),
-    total: 100,
+    needBoxCount: 100,
   },
 ])
 
@@ -31,7 +31,7 @@ const selectChange = (index) => {
   }
 }
 
-const targetCargo = ref()
+const targetTruck = ref()
 
 const logData = ref([
   {
@@ -43,7 +43,7 @@ const logData = ref([
 const addCargo = async () => {
   cargoData.value.push({
     id: crypto.randomUUID(),
-    total: 100,
+    needBoxCount: 100,
   })
   await nextTick()
   formRef.value.scrollTop(100000)
@@ -67,7 +67,7 @@ const startCalculation = async () => {
     const cargoResult = []
 
     for await (let cargo of cargoData.value) {
-      if (!cargo.cargoId || !cargo.total) {
+      if (!cargo.cargoId || !cargo.needBoxCount) {
         await addLogRecord(`货物信息不完整，跳过计算`)
         continue
       }
@@ -75,76 +75,71 @@ const startCalculation = async () => {
       cargo = { ...cargo }
 
       const freeWidth = {
-        placementA: truck.width % cargo.width,
-        placementB: truck.width % cargo.length,
+        placement1: truck.width % cargo.width,
+        placement2: truck.width % cargo.length,
       }
 
-      if (freeWidth.placementA <= freeWidth.placementB) {
-        cargo.placement = 'A'
+      if (freeWidth.placement1 <= freeWidth.placement2) {
+        cargo.placement = '顺向摆放'
         cargo.relativeLength = cargo.length
         cargo.relativeWidth = cargo.width
         cargo.relativeHeight = cargo.height
       } else {
-        cargo.placement = 'B'
+        cargo.placement = '横向摆放'
         cargo.relativeLength = cargo.width
         cargo.relativeWidth = cargo.length
         cargo.relativeHeight = cargo.height
       }
 
-      // 每行箱数
-      const rowCount = Math.floor(truck.width / cargo.relativeWidth)
-      // 每列箱数
-      const columnCount = Math.floor(truck.height / cargo.relativeHeight)
-      // 每层箱数
-      const layerCount = rowCount * columnCount
-      // 所需层数
-      const layerNeeded = Math.ceil(cargo.total / layerCount)
-      // 每层长度
+      const rowBoxCount = Math.floor(truck.width / cargo.relativeWidth)
+      const columnBoxCount = Math.floor(truck.height / cargo.relativeHeight)
       const layerLength = cargo.relativeLength
-      // 货物长度
-      const cargoLength = layerNeeded * layerLength
+      const layerBoxCount = rowBoxCount * columnBoxCount
+
+      const needLayerCount = Math.ceil(cargo.needBoxCount / layerBoxCount)
+      const mixedLength = needLayerCount * layerLength
 
       cargoResult.push({
         ...cargo,
-        rowCount,
-        columnCount,
-        layerCount,
-        layerNeeded,
+        rowBoxCount,
+        columnBoxCount,
         layerLength,
-        cargoLength,
+        layerBoxCount,
+        needLayerCount,
+        mixedLength,
       })
     }
 
-    const totalLength = cargoResult.reduce((acc, cur) => {
-      return acc + cur.cargoLength
+    const mixedLengthTotal = cargoResult.reduce((acc, cur) => {
+      return acc + cur.mixedLength
     }, 0)
 
     truckResult.push({
       ...truck,
       cargo: cargoResult,
-      totalLength,
+      mixedLengthTotal,
     })
   }
 
-  const freeLenght = truckResult.map(
-    (truck) => truck.length - truck.totalLength,
+  const freeLength = truckResult.map(
+    (truck) => truck.length - truck.mixedLengthTotal,
   )
 
-  const index = freeLenght.indexOf(
-    Math.min(...freeLenght.filter((item) => item >= 0)),
+  const index = freeLength.indexOf(
+    Math.min(...freeLength.filter((item) => item >= 0)),
   )
-  const targetTruck = truckResult[index]
+  const _targetTruck = truckResult[index]
 
-  if (targetTruck) {
+  if (_targetTruck) {
     await addLogRecord(
-      `最佳装载方案为 ${targetTruck.name}，剩余空间 ${freeLenght[index]}mm`,
+      `最佳装载方案为 ${_targetTruck.name}，剩余空间 ${freeLength[index]}mm`,
     )
-    for await (const cargo of targetTruck.cargo) {
+    for await (const cargo of _targetTruck.cargo) {
       await addLogRecord(
-        `${cargo.name} ${cargo.placement === 'A' ? '顺向摆放' : '横向摆放'}，每排可放 ${cargo.layerCount} 箱，${cargo.total} 箱需要使用 ${cargo.layerNeeded} 排，使用长度 ${cargo.cargoLength}mm`,
+        `${cargo.name} ${cargo.placement}，每排可放 ${cargo.layerBoxCount} 箱，${cargo.needBoxCount} 箱需要使用 ${cargo.needLayerCount} 排，使用长度 ${cargo.mixedLength}mm`,
       )
     }
-    targetCargo.value = targetTruck.cargo
+    targetTruck.value = _targetTruck
   } else {
     await addLogRecord('没有找到合适的装载方案')
   }
@@ -179,11 +174,11 @@ const startCalculation = async () => {
               </template>
             </ASelect>
             <AInputNumber
-              v-model="cargo.total"
+              v-model="cargo.needBoxCount"
               :min="0"
               :max="100000"
               mode="button"
-              placeholder="总箱数"
+              placeholder="所需箱数"
               class="!w-36"
             />
             <AButton
@@ -201,7 +196,7 @@ const startCalculation = async () => {
     <AScrollbar ref="timeline" class="h-56 w-full overflow-auto">
       <ATimeline>
         <ATimelineItem v-for="(log, index) in logData" :key="index">
-          <div class="flex items-center gap-2">
+          <div class="flex items-center gap-2 text-nowrap">
             <span class="arco-timeline-item-label">{{ log.time }}</span>
             <span class="arco-timeline-item-content">{{ log.content }}</span>
           </div>
@@ -209,12 +204,13 @@ const startCalculation = async () => {
       </ATimeline>
     </AScrollbar>
   </ASpace>
-  <CratingDetail :cargo="targetCargo" />
+  <CratingDetail :truck="targetTruck" />
 </template>
 
 <style scoped>
 :deep(.arco-space-item:last-child) {
   flex-grow: 1;
+  overflow: auto;
 }
 
 :deep(.arco-space-item:last-child > .arco-scrollbar) {
