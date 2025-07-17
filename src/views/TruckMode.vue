@@ -1,6 +1,6 @@
 <script setup>
 import CratingDetail from '../components/CratingDetail.vue'
-import { computed, ref } from 'vue'
+import { ref } from 'vue'
 import { useStorage } from '@vueuse/core'
 
 const database = useStorage('cargo-crating-database', {
@@ -8,12 +8,13 @@ const database = useStorage('cargo-crating-database', {
   cargo: [],
 })
 
-const truckData = ref()
+const truckInfo = ref()
 
 const cargoData = ref([
   {
     id: crypto.randomUUID(),
-    needBoxCount: 100,
+    mixedLayerCount: 10,
+    placement: '顺向摆放',
   },
 ])
 
@@ -27,22 +28,84 @@ const selectChange = (index, value) => {
   }
 }
 
+const targetTruck = ref()
+
 const addCargo = async () => {
   cargoData.value.push({
     id: crypto.randomUUID(),
-    needBoxCount: 100,
+    mixedLayerCount: 10,
+    placement: '顺向摆放',
   })
 }
 
-const targetTruck = computed(() => {
-  const truck = { ...truckData.value }
+const startCalculation = () => {
+  const cargoResult = []
+  const truck = truckInfo.value
 
-  truck.cargo = cargoData.value
+  for (let cargo of cargoData.value) {
+    if (!cargo.cargoId || !cargo.mixedLayerCount) {
+      continue
+    }
 
-  return truck
-})
+    cargo = { ...cargo }
 
-const startCalculation = () => {}
+    if (cargo.placement === '顺向摆放') {
+      cargo.relativeLength = cargo.length
+      cargo.relativeWidth = cargo.width
+      cargo.relativeHeight = cargo.height
+    }
+
+    if (cargo.placement === '横向摆放') {
+      cargo.relativeLength = cargo.width
+      cargo.relativeWidth = cargo.length
+      cargo.relativeHeight = cargo.height
+    }
+
+    if (cargo.placement === '顺向靠放') {
+      cargo.relativeLength = cargo.length
+      cargo.relativeWidth = cargo.height
+      cargo.relativeHeight = cargo.width
+    }
+
+    if (cargo.placement === '横向靠放') {
+      cargo.relativeLength = cargo.height
+      cargo.relativeWidth = cargo.length
+      cargo.relativeHeight = cargo.width
+    }
+
+    if (cargo.placement === '顺向立放') {
+      cargo.relativeLength = cargo.width
+      cargo.relativeWidth = cargo.height
+      cargo.relativeHeight = cargo.length
+    }
+
+    if (cargo.placement === '横向立放') {
+      cargo.relativeLength = cargo.height
+      cargo.relativeWidth = cargo.width
+      cargo.relativeHeight = cargo.length
+    }
+
+    const rowBoxCount = Math.floor(truck.width / cargo.relativeWidth)
+    const columnBoxCount = Math.floor(truck.height / cargo.relativeHeight)
+    const layerLength = cargo.relativeLength
+    const layerBoxCount = rowBoxCount * columnBoxCount
+    const mixedLength = cargo.mixedLayerCount * layerLength
+
+    cargoResult.push({
+      ...cargo,
+      rowBoxCount,
+      columnBoxCount,
+      layerLength,
+      layerBoxCount,
+      mixedLength,
+    })
+  }
+
+  targetTruck.value = {
+    ...truck,
+    cargo: cargoResult,
+  }
+}
 </script>
 
 <template>
@@ -53,7 +116,7 @@ const startCalculation = () => {}
 
     <div class="flex gap-2">
       <ASelect
-        v-model="truckData"
+        v-model="truckInfo"
         allow-search
         placeholder="选择货车"
         class="!w-36"
@@ -114,7 +177,7 @@ const startCalculation = () => {}
           </AFormItem>
           <AFormItem label="混装排数" show-colon>
             <AInputNumber
-              v-model="cargo.needBoxCount"
+              v-model="cargo.mixedLayerCount"
               :min="0"
               :max="100000"
               mode="button"

@@ -16,7 +16,6 @@ const cargoData = computed(() => {
     const cargo = { ...item }
 
     // 混装箱数和重量
-    cargo.mixedLayerCount = cargo.needLayerCount
     cargo.mixedBoxCount = cargo.mixedLayerCount * cargo.layerBoxCount
     cargo.mixedNetWeight = cargo.mixedBoxCount * cargo.netWeight
     cargo.mixedGrossWeight = cargo.mixedBoxCount * cargo.grossWeight

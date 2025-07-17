@@ -70,8 +70,8 @@ const startCalculation = () => {
       const layerLength = cargo.relativeLength
       const layerBoxCount = rowBoxCount * columnBoxCount
 
-      const needLayerCount = Math.ceil(cargo.needBoxCount / layerBoxCount)
-      const mixedLength = needLayerCount * layerLength
+      const mixedLayerCount = Math.ceil(cargo.needBoxCount / layerBoxCount)
+      const mixedLength = mixedLayerCount * layerLength
 
       cargoResult.push({
         ...cargo,
@@ -79,7 +79,7 @@ const startCalculation = () => {
         columnBoxCount,
         layerLength,
         layerBoxCount,
-        needLayerCount,
+        mixedLayerCount,
         mixedLength,
       })
     }
