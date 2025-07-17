@@ -70,6 +70,7 @@ const columns = [
     title: '混装箱数',
     dataIndex: 'mixedBoxCount',
     align: 'center',
+    bodyCellClass: '!bg-yellow-100',
   },
   {
     title: '混装净重',
@@ -106,6 +107,7 @@ const columns = [
     title: '每排箱数',
     dataIndex: 'layerBoxCount',
     align: 'center',
+    bodyCellClass: '!bg-yellow-100',
   },
   {
     title: '最大排数',
@@ -169,6 +171,14 @@ const columns = [
 
 <template>
   <ACard title="装箱明细">
-    <ATable :columns :data="cargoData"></ATable>
+    <ATable
+      :columns
+      :data="cargoData"
+      :scroll="{
+        x: 2000,
+      }"
+      :pagination="false"
+      size="large"
+    ></ATable>
   </ACard>
 </template>

@@ -8,10 +8,6 @@ body {
   text-align: center;
 }
 
-.arco-tabs-nav-type-capsule .arco-tabs-nav-tab:not(.arco-tabs-nav-tab-scroll) {
-  justify-content: center;
-}
-
 .arco-timeline-item {
   min-height: 32px;
 }
@@ -31,4 +27,8 @@ body {
 
 .arco-select-dropdown .arco-select-option-content {
   flex-grow: 1;
+}
+
+.arco-scrollbar-thumb-direction-horizontal .arco-scrollbar-thumb-bar {
+  margin: 12px 0;
 }
