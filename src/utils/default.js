@@ -58,7 +58,14 @@ export const truckDefaultData = [
   {
     id: crypto.randomUUID(),
     name: '17米货车',
-    length: 1700,
+    length: 17000,
+    width: 2300,
+    height: 2500,
+  },
+  {
+    id: crypto.randomUUID(),
+    name: '21米货车',
+    length: 21000,
     width: 2300,
     height: 2500,
   },

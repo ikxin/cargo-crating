@@ -21,17 +21,17 @@ const cargoData = computed(() => {
     cargo.mixedGrossWeight = cargo.mixedBoxCount * cargo.grossWeight
 
     // 最大排数和箱数
-    cargo.maxLayerCount = Math.floor(truckHeight / cargo.relativeHeight)
-    cargo.maxBoxCount = cargo.maxLayerCount * cargo.rowBoxCount
+    cargo.maxLayerCount = Math.floor(truckLength / cargo.relativeLength)
+    cargo.maxBoxCount = cargo.maxLayerCount * cargo.layerBoxCount
 
     // 剩余长宽高
-    cargo.freeLength = truckLength - cargo.mixedLength
+    cargo.freeLength = truckLength - cargo.relativeLength * cargo.maxLayerCount
     cargo.freeWidth = truckWidth - cargo.relativeWidth * cargo.rowBoxCount
     cargo.freeHeight = truckHeight - cargo.relativeHeight * cargo.columnBoxCount
 
     // 每排净重和毛重
-    cargo.layerNetWeight = cargo.mixedNetWeight / cargo.mixedLayerCount
-    cargo.layerGrossWeight = cargo.mixedGrossWeight / cargo.mixedLayerCount
+    cargo.layerNetWeight = cargo.netWeight * cargo.mixedBoxCount
+    cargo.layerGrossWeight = cargo.grossWeight * cargo.mixedBoxCount
 
     // 最大净重和毛重
     cargo.maxNetWeight = cargo.netWeight * cargo.maxBoxCount
