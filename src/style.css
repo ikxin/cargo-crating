@@ -30,5 +30,6 @@ body {
 }
 
 .arco-scrollbar-thumb-direction-horizontal .arco-scrollbar-thumb-bar {
+  height: 6px;
   margin: 12px 0;
 }
