@@ -182,14 +182,20 @@ const columns = [
     bodyCellClass: '!bg-yellow-100',
   },
   {
-    title: '最大排数',
-    dataIndex: 'maxLayerCount',
+    title: '每排净重',
+    dataIndex: 'layerNetWeight',
     align: 'center',
+    render({ record }) {
+      return `${record.layerNetWeight.toFixed(1)}kg`
+    },
   },
   {
-    title: '最大箱数',
-    dataIndex: 'maxBoxCount',
+    title: '每排毛重',
+    dataIndex: 'layerGrossWeight',
     align: 'center',
+    render({ record }) {
+      return `${record.layerGrossWeight.toFixed(1)}kg`
+    },
   },
   {
     title: '剩余长度',
@@ -207,20 +213,14 @@ const columns = [
     align: 'center',
   },
   {
-    title: '每排净重',
-    dataIndex: 'layerNetWeight',
+    title: '最大排数',
+    dataIndex: 'maxLayerCount',
     align: 'center',
-    render({ record }) {
-      return `${record.layerNetWeight.toFixed(1)}kg`
-    },
   },
   {
-    title: '每排毛重',
-    dataIndex: 'layerGrossWeight',
+    title: '最大箱数',
+    dataIndex: 'maxBoxCount',
     align: 'center',
-    render({ record }) {
-      return `${record.layerGrossWeight.toFixed(1)}kg`
-    },
   },
   {
     title: '最大净重',
@@ -239,10 +239,89 @@ const columns = [
     },
   },
 ]
+
+const exportData = () => {
+  if (!props.truck || !cargoData.value || cargoData.value.length === 0) {
+    alert('请先选择货车型号并添加货物')
+    return
+  }
+
+  const exportDataArray = []
+
+  // 货车信息表头
+  const truckHeaders = truckData.value.map((item) => item.label)
+  exportDataArray.push(truckHeaders)
+
+  // 货车信息数据
+  const truckValues = truckData.value.map((item) => item.value)
+  exportDataArray.push(truckValues)
+
+  // 添加空行分隔
+  exportDataArray.push([])
+
+  // 货物数据表头
+  const cargoHeaders = columns.map((col) => col.title)
+  exportDataArray.push(cargoHeaders)
+
+  // 货物数据
+  cargoData.value.forEach((item) => {
+    const row = [
+      item.name || '未选择',
+      item.placement || '未选择',
+      item.mixedLayerCount || 0,
+      item.mixedLength || 0,
+      item.mixedBoxCount || 0,
+      `${(item.mixedNetWeight || 0).toFixed(1)}kg`,
+      `${(item.mixedGrossWeight || 0).toFixed(1)}kg`,
+      item.rowBoxCount || 0,
+      item.columnBoxCount || 0,
+      item.layerLength || 0,
+      item.layerBoxCount || 0,
+      `${(item.layerNetWeight || 0).toFixed(1)}kg`,
+      `${(item.layerGrossWeight || 0).toFixed(1)}kg`,
+      item.freeLength || 0,
+      item.freeWidth || 0,
+      item.freeHeight || 0,
+      item.maxLayerCount || 0,
+      item.maxBoxCount || 0,
+      `${(item.maxNetWeight || 0).toFixed(1)}kg`,
+      `${(item.maxGrossWeight || 0).toFixed(1)}kg`,
+    ]
+
+    exportDataArray.push(row)
+  })
+
+  const csvContent = exportDataArray
+    .map((row) =>
+      row
+        .map((cell) =>
+          typeof cell === 'string' ? `"${cell.replace(/"/g, '""')}"` : cell,
+        )
+        .join(','),
+    )
+    .join('\n')
+
+  const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
+  const url = URL.createObjectURL(blob)
+  const link = document.createElement('a')
+  link.setAttribute('href', url)
+  link.setAttribute(
+    'download',
+    `装箱明细_${new Date().toLocaleString().replace(/[/:]/g, '-')}.csv`,
+  )
+  link.style.display = 'none'
+  document.body.appendChild(link)
+  link.click()
+  document.body.removeChild(link)
+  URL.revokeObjectURL(url)
+}
 </script>
 
 <template>
   <ACard title="装箱明细">
+    <template #extra>
+      <AButton type="primary" @click="exportData">导出</AButton>
+    </template>
     <ADescriptions
       :data="truckData"
       bordered
