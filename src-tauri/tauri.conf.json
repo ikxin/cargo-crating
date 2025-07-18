@@ -1,7 +1,8 @@
 {
   "$schema": "../node_modules/@tauri-apps/cli/config.schema.json",
-  "productName": "cargo-crating",
-  "version": "0.2.0",
+  "productName": "CargoCrating",
+  "mainBinaryName": "cargo-crating",
+  "version": "0.2.1",
   "identifier": "com.ikxin.cargo-crating",
   "build": {
     "frontendDist": "../dist",
