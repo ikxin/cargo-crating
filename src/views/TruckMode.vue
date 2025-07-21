@@ -180,6 +180,7 @@ const startCalculation = () => {
               v-model="cargo.mixedLayerCount"
               :min="0"
               :max="100000"
+              :precision="0"
               mode="button"
               class="!w-48"
             />

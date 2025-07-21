@@ -53,7 +53,7 @@ const handleClose = () => {
 <template>
   <AModal
     :title="edit ? '编辑规格' : '添加规格'"
-    :width="360"
+    :width="320"
     @before-ok="handleSubmit"
     @close="handleClose"
   >
@@ -64,33 +64,38 @@ const handleClose = () => {
       <AFormItem label="长度" field="length" :rules="{ required: true }">
         <AInputNumber
           v-model="data.length"
-          id="length"
           :min="0"
           :max="100000"
-          :formatter="(n) => `${n}mm`"
-          :parser="(n) => Number(n.replace('mm', ''))"
-          mode="button"
-        />
+          :precision="0"
+        >
+          <template #append>
+            <span class="w-6 text-center">mm</span>
+          </template>
+        </AInputNumber>
       </AFormItem>
       <AFormItem label="宽度" field="width" :rules="{ required: true }">
         <AInputNumber
           v-model="data.width"
           :min="0"
           :max="100000"
-          :formatter="(n) => `${n}mm`"
-          :parser="(n) => Number(n.replace('mm', ''))"
-          mode="button"
-        />
+          :precision="0"
+        >
+          <template #append>
+            <span class="w-6 text-center">mm</span>
+          </template>
+        </AInputNumber>
       </AFormItem>
       <AFormItem label="高度" field="height" :rules="{ required: true }">
         <AInputNumber
           v-model="data.height"
           :min="0"
           :max="100000"
-          :formatter="(n) => `${n}mm`"
-          :parser="(n) => Number(n.replace('mm', ''))"
-          mode="button"
-        />
+          :precision="0"
+        >
+          <template #append>
+            <span class="w-6 text-center">mm</span>
+          </template>
+        </AInputNumber>
       </AFormItem>
       <template v-if="prop === 'cargo'">
         <AFormItem label="净重" field="netWeight" :rules="{ required: true }">
@@ -100,10 +105,11 @@ const handleClose = () => {
             :max="100000"
             :step="0.1"
             :precision="1"
-            :formatter="(n) => `${n}kg`"
-            :parser="(n) => Number(n.replace('kg', ''))"
-            mode="button"
-          />
+          >
+            <template #append>
+              <span class="w-6 text-center">kg</span>
+            </template>
+          </AInputNumber>
         </AFormItem>
         <AFormItem label="毛重" field="grossWeight" :rules="{ required: true }">
           <AInputNumber
@@ -112,10 +118,11 @@ const handleClose = () => {
             :max="100000"
             :step="0.1"
             :precision="1"
-            :formatter="(n) => `${n}kg`"
-            :parser="(n) => Number(n.replace('kg', ''))"
-            mode="button"
-          />
+          >
+            <template #append>
+              <span class="w-6 text-center">kg</span>
+            </template>
+          </AInputNumber>
         </AFormItem>
       </template>
     </AForm>
