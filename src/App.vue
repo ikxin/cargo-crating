@@ -1,6 +1,7 @@
 <script setup>
 import CargoMode from './views/CargoMode.vue'
 import TruckMode from './views/TruckMode.vue'
+import Setting from './views/Setting.vue'
 import SpecTable from './components/SpecTable.vue'
 import { ref } from 'vue'
 
@@ -9,6 +10,7 @@ const mode = ref('truck')
 const tabs = {
   truck: TruckMode,
   cargo: CargoMode,
+  setting: Setting,
 }
 </script>
 
@@ -17,6 +19,7 @@ const tabs = {
     <ARadioGroup v-model="mode" type="button" size="large">
       <ARadio value="truck">货车模式</ARadio>
       <ARadio value="cargo">货物模式</ARadio>
+      <ARadio value="setting">系统设置</ARadio>
     </ARadioGroup>
   </div>
 
