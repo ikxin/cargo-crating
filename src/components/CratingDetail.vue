@@ -76,7 +76,7 @@ const truckData = computed(() => {
     },
     {
       label: '剩余长度',
-      value: `${freeLength.toFixed(1)}m`,
+      value: `${freeLength.toFixed(1)}mm`,
     },
     {
       label: '货车长度',
