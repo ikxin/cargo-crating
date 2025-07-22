@@ -320,7 +320,12 @@ const exportData = () => {
 <template>
   <ACard title="装箱明细">
     <template #extra>
-      <AButton type="primary" @click="exportData">导出</AButton>
+      <AButton type="primary" @click="exportData">
+        <template #icon>
+          <IconExport />
+        </template>
+        <template #default>导出</template>
+      </AButton>
     </template>
     <ADescriptions
       :data="truckData"

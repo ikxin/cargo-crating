@@ -190,7 +190,9 @@ const startCalculation = () => {
             type="primary"
             status="danger"
           >
-            删除
+            <template #icon>
+              <IconDelete />
+            </template>
           </AButton>
         </AForm>
       </template>

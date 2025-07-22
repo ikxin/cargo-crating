@@ -67,10 +67,23 @@ const importData = (event) => {
 <template>
   <ACard title="系统设置">
     <ASpace>
-      <AButton type="primary" @click="exportData">导出数据</AButton>
-      <AButton type="primary" @click="triggerImport">导入数据</AButton>
+      <AButton type="primary" @click="exportData">
+        <template #icon>
+          <IconExport />
+        </template>
+        <template #default>导出数据</template>
+      </AButton>
+      <AButton type="primary" @click="triggerImport">
+        <template #icon>
+          <IconImport />
+        </template>
+        <template #default>导入数据</template>
+      </AButton>
       <AButton type="primary" status="warning" @click="resetDatabase">
-        恢复出厂数据
+        <template #icon>
+          <IconSettings />
+        </template>
+        <template #default>恢复出厂数据</template>
       </AButton>
     </ASpace>
     <input

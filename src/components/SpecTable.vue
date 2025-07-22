@@ -44,7 +44,12 @@ const deleteRecord = (record) => {
 <template>
   <ACard :title="`${props.name}规格`">
     <template #extra>
-      <AButton type="primary" @click="createRecord">添加</AButton>
+      <AButton type="primary" @click="createRecord">
+        <template #icon>
+          <IconPlus />
+        </template>
+        <template #default>添加</template>
+      </AButton>
       <SpecForm
         v-model:visible="form.open"
         :data="form.data"
@@ -84,19 +89,15 @@ const deleteRecord = (record) => {
           <ATableColumn title="操作" align="center">
             <template #cell="{ record }">
               <ASpace>
-                <AButton
-                  status="warning"
-                  type="outline"
-                  @click="updateRecord(record)"
-                >
-                  编辑
+                <AButton status="warning" @click="updateRecord(record)">
+                  <template #icon>
+                    <IconEdit />
+                  </template>
                 </AButton>
-                <AButton
-                  status="danger"
-                  type="outline"
-                  @click="deleteRecord(record)"
-                >
-                  删除
+                <AButton status="danger" @click="deleteRecord(record)">
+                  <template #icon>
+                    <IconDelete />
+                  </template>
                 </AButton>
               </ASpace>
             </template>
