@@ -1,6 +1,6 @@
 <script setup>
 import CratingDetail from '../components/CratingDetail.vue'
-import { ref } from 'vue'
+import { ref, watch } from 'vue'
 import { useStorage } from '@vueuse/core'
 
 const database = useStorage('cargo-crating-database', {
@@ -106,6 +106,14 @@ const startCalculation = () => {
     cargo: cargoResult,
   }
 }
+
+watch(
+  [cargoData, truckInfo],
+  () => {
+    startCalculation()
+  },
+  { deep: true },
+)
 </script>
 
 <template>
@@ -127,7 +135,6 @@ const startCalculation = () => {
         </template>
       </ASelect>
       <AButton type="primary" @click="addCargo">添加货物</AButton>
-      <AButton @click="startCalculation">开始计算</AButton>
     </div>
 
     <div class="flex flex-col gap-2">

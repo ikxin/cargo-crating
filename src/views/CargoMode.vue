@@ -1,6 +1,6 @@
 <script setup>
 import CratingDetail from '../components/CratingDetail.vue'
-import { ref } from 'vue'
+import { ref, watch } from 'vue'
 import { useStorage } from '@vueuse/core'
 import { Message } from '@arco-design/web-vue'
 
@@ -109,6 +109,14 @@ const startCalculation = () => {
     Message.info('没有找到合适的卡车')
   }
 }
+
+watch(
+  cargoData,
+  () => {
+    startCalculation()
+  },
+  { deep: true },
+)
 </script>
 
 <template>
@@ -119,7 +127,6 @@ const startCalculation = () => {
 
     <div class="flex gap-2">
       <AButton type="primary" @click="addCargo">添加货物</AButton>
-      <AButton @click="startCalculation">开始计算</AButton>
     </div>
 
     <div class="flex flex-col gap-2">
