@@ -1,6 +1,32 @@
 # Changelog
 
 
+## v0.4.0
+
+[compare changes](https://github.com/ikxin/cargo-crating/compare/v0.3.1...v0.4.0)
+
+### 🚀 Enhancements
+
+- Automatic calculation cargo data ([32c046a](https://github.com/ikxin/cargo-crating/commit/32c046a))
+- Enhance cargo placement logic ([df8723c](https://github.com/ikxin/cargo-crating/commit/df8723c))
+- Cargo volume weight conversion ([db64356](https://github.com/ikxin/cargo-crating/commit/db64356))
+
+### 🩹 Fixes
+
+- Calculation error in cargo mode ([f2a0b58](https://github.com/ikxin/cargo-crating/commit/f2a0b58))
+
+### 🏡 Chore
+
+- Update dependencies ([e75dc0f](https://github.com/ikxin/cargo-crating/commit/e75dc0f))
+
+### 🎨 Styles
+
+- Highlight key values in reality ([37d5836](https://github.com/ikxin/cargo-crating/commit/37d5836))
+
+### ❤️ Contributors
+
+- 一纸忘忧 ([@ikxin](https://github.com/ikxin))
+
 ## v0.3.1
 
 [compare changes](https://github.com/ikxin/cargo-crating/compare/v0.3.0...v0.3.1)
