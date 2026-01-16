@@ -10,13 +10,106 @@ const database = useStorage('cargo-crating-database', {
 
 const truckInfo = ref()
 
+const placementModes = [
+  '顺向摆放',
+  '横向摆放',
+  '顺向靠放',
+  '横向靠放',
+  '顺向立放',
+  '横向立放',
+]
+
 const cargoData = ref([
   {
     id: crypto.randomUUID(),
     mixedLayerCount: 10,
-    placement: '顺向摆放',
+    placement: '',
   },
 ])
+
+const getRelativeSize = (cargo, placement) => {
+  const { length, width, height } = cargo || {}
+  let relativeLength = length
+  let relativeWidth = width
+  let relativeHeight = height
+
+  if (!length || !width || !height)
+    return { relativeLength, relativeWidth, relativeHeight }
+
+  switch (placement) {
+    case '顺向摆放':
+      relativeLength = length
+      relativeWidth = width
+      relativeHeight = height
+      break
+    case '横向摆放':
+      relativeLength = width
+      relativeWidth = length
+      relativeHeight = height
+      break
+    case '顺向靠放':
+      relativeLength = length
+      relativeWidth = height
+      relativeHeight = width
+      break
+    case '横向靠放':
+      relativeLength = height
+      relativeWidth = length
+      relativeHeight = width
+      break
+    case '顺向立放':
+      relativeLength = width
+      relativeWidth = height
+      relativeHeight = length
+      break
+    case '横向立放':
+      relativeLength = height
+      relativeWidth = width
+      relativeHeight = length
+      break
+  }
+
+  return { relativeLength, relativeWidth, relativeHeight }
+}
+
+const getRecommendedPlacement = (cargo, truck) => {
+  if (
+    !truck ||
+    !cargo ||
+    !cargo.length ||
+    !cargo.width ||
+    !cargo.height ||
+    !truck.width ||
+    !truck.height
+  ) {
+    return null
+  }
+
+  let bestPlacement = null
+  let bestLayerBoxCount = -1
+
+  for (const placement of placementModes) {
+    const { relativeWidth, relativeHeight } = getRelativeSize(cargo, placement)
+    if (!relativeWidth || !relativeHeight) continue
+
+    const rowBoxCount = Math.floor(truck.width / relativeWidth)
+    const columnBoxCount = Math.floor(truck.height / relativeHeight)
+    const layerBoxCount = rowBoxCount * columnBoxCount
+
+    if (layerBoxCount > bestLayerBoxCount) {
+      bestLayerBoxCount = layerBoxCount
+      bestPlacement = placement
+    }
+  }
+
+  return bestPlacement
+}
+
+const getPlacementLabel = (placement, cargo) => {
+  return cargo?.recommendedPlacement === placement
+    ? `${placement}（推荐）`
+    : placement
+}
 
 const selectChange = (index, value) => {
   const cargo = database.value.cargo.find((item) => item.id === value)
@@ -33,8 +126,8 @@ const targetTruck = ref()
 const addCargo = async () => {
   cargoData.value.push({
     id: crypto.randomUUID(),
+    placement: '',
     mixedLayerCount: 10,
-    placement: '顺向摆放',
   })
 }
 
@@ -42,48 +135,40 @@ const startCalculation = () => {
   const cargoResult = []
   const truck = truckInfo.value
 
-  for (let cargo of cargoData.value) {
-    if (!cargo.cargoId || !cargo.mixedLayerCount) {
+  for (let rawCargo of cargoData.value) {
+    if (!rawCargo.cargoId || !rawCargo.mixedLayerCount) {
       continue
     }
 
-    cargo = { ...cargo }
+    let cargo = { ...rawCargo }
 
-    if (cargo.placement === '顺向摆放') {
-      cargo.relativeLength = cargo.length
-      cargo.relativeWidth = cargo.width
-      cargo.relativeHeight = cargo.height
+    const recommended = getRecommendedPlacement(cargo, truck)
+
+    if (recommended) {
+      if (rawCargo.recommendedPlacement !== recommended) {
+        rawCargo.recommendedPlacement = recommended
+      }
+      if (!rawCargo.placement) {
+        rawCargo.placement = recommended
+        cargo.placement = recommended
+      } else {
+        cargo.placement = rawCargo.placement
+      }
     }
 
-    if (cargo.placement === '横向摆放') {
-      cargo.relativeLength = cargo.width
-      cargo.relativeWidth = cargo.length
-      cargo.relativeHeight = cargo.height
+    const placementToUse = cargo.placement || recommended
+    if (!placementToUse) {
+      continue
     }
 
-    if (cargo.placement === '顺向靠放') {
-      cargo.relativeLength = cargo.length
-      cargo.relativeWidth = cargo.height
-      cargo.relativeHeight = cargo.width
-    }
+    const { relativeLength, relativeWidth, relativeHeight } = getRelativeSize(
+      cargo,
+      placementToUse,
+    )
 
-    if (cargo.placement === '横向靠放') {
-      cargo.relativeLength = cargo.height
-      cargo.relativeWidth = cargo.length
-      cargo.relativeHeight = cargo.width
-    }
-
-    if (cargo.placement === '顺向立放') {
-      cargo.relativeLength = cargo.width
-      cargo.relativeWidth = cargo.height
-      cargo.relativeHeight = cargo.length
-    }
-
-    if (cargo.placement === '横向立放') {
-      cargo.relativeLength = cargo.height
-      cargo.relativeWidth = cargo.width
-      cargo.relativeHeight = cargo.length
-    }
+    cargo.relativeLength = relativeLength
+    cargo.relativeWidth = relativeWidth
+    cargo.relativeHeight = relativeHeight
 
     const rowBoxCount = Math.floor(truck.width / cargo.relativeWidth)
     const columnBoxCount = Math.floor(truck.height / cargo.relativeHeight)
@@ -154,32 +239,12 @@ watch(
           </AFormItem>
           <AFormItem label="摆放方式" show-colon>
             <ASelect v-model="cargo.placement" class="w-48!">
-              <AOption value="顺向摆放">顺向摆放</AOption>
-              <AOption value="横向摆放">横向摆放</AOption>
-              <AOption value="顺向靠放" label="顺向靠放">
-                <div class="flex items-center gap-2">
-                  <span class="flex-1">顺向靠放</span>
-                  <ATag color="red">不推荐</ATag>
-                </div>
-              </AOption>
-              <AOption value="横向靠放" label="横向靠放">
-                <div class="flex items-center gap-2">
-                  <span class="flex-1">横向靠放</span>
-                  <ATag color="red" size="small">不推荐</ATag>
-                </div>
-              </AOption>
-              <AOption value="顺向立放" label="顺向立放">
-                <div class="flex items-center gap-2">
-                  <span class="flex-1">顺向立放</span>
-                  <ATag color="red" size="small">不推荐</ATag>
-                </div>
-              </AOption>
-              <AOption value="横向立放" label="横向立放">
-                <div class="flex items-center gap-2">
-                  <span class="flex-1">横向立放</span>
-                  <ATag color="red" size="small">不推荐</ATag>
-                </div>
-              </AOption>
+              <template v-for="placement in placementModes" :key="placement">
+                <AOption
+                  :value="placement"
+                  :label="getPlacementLabel(placement, cargo)"
+                />
+              </template>
             </ASelect>
           </AFormItem>
           <AFormItem label="混装排数" show-colon>
