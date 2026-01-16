@@ -1,5 +1,5 @@
 <script setup>
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 
 const props = defineProps({
   truck: Object,
@@ -43,17 +43,36 @@ const cargoData = computed(() => {
   })
 })
 
+const cargoVolumeMm3 = computed(() => {
+  if (!props.truck) return 0
+  return props.truck.cargo.reduce((sum, item) => {
+    const volume =
+      item.relativeLength * item.relativeWidth * item.relativeHeight
+    const boxCount =
+      item.needBoxCount ?? item.mixedLayerCount * item.layerBoxCount
+    return sum + volume * boxCount
+  }, 0)
+})
+
+const volumetricDivisor = ref(6000)
+
+const volumetricWeight = computed(() => {
+  if (!props.truck || !cargoVolumeMm3.value) {
+    return 0
+  } else {
+    return cargoVolumeMm3.value / 1000 / volumetricDivisor.value
+  }
+})
+
 const truckData = computed(() => {
   if (!props.truck) return []
 
-  // 货物净重总和：优先按所需箱数 needBoxCount 计算
   const netWeightTotal = props.truck.cargo.reduce((sum, item) => {
     const boxCount =
       item.needBoxCount ?? item.mixedLayerCount * item.layerBoxCount
     return sum + item.netWeight * boxCount
   }, 0)
 
-  // 货物毛重总和：同上
   const grossWeightTotal = props.truck.cargo.reduce((sum, item) => {
     const boxCount =
       item.needBoxCount ?? item.mixedLayerCount * item.layerBoxCount
@@ -69,14 +88,7 @@ const truckData = computed(() => {
   const truckVolume =
     props.truck.length * props.truck.width * props.truck.height
 
-  // 货物体积：优先按所需箱数 needBoxCount 计算，兼容无 needBoxCount 的情况
-  const cargoVolume = props.truck.cargo.reduce((sum, item) => {
-    const volume =
-      item.relativeLength * item.relativeWidth * item.relativeHeight
-    const boxCount =
-      item.needBoxCount ?? item.mixedLayerCount * item.layerBoxCount
-    return sum + volume * boxCount
-  }, 0)
+  const cargoVolume = cargoVolumeMm3.value
 
   return [
     {
@@ -351,6 +363,24 @@ const exportData = () => {
           </div>
         </ADescriptionsItem>
       </template>
+    </ADescriptions>
+    <ADescriptions bordered class="mb-4" size="large">
+      <ADescriptionsItem label="体积换算">
+        <div class="flex items-center gap-2 px-5 py-2.5">
+          <span>{{ (cargoVolumeMm3 / 1000).toFixed(0) }}cm³</span>
+          <span>÷</span>
+          <ASelect
+            v-model="volumetricDivisor"
+            :options="[
+              { label: '5000', value: 5000 },
+              { label: '6000', value: 6000 },
+            ]"
+            style="width: 90px"
+            size="small"
+          />
+          <span>= {{ volumetricWeight.toFixed(1) }}kg</span>
+        </div>
+      </ADescriptionsItem>
     </ADescriptions>
     <ATable
       :columns
