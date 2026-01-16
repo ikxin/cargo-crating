@@ -46,12 +46,18 @@ const cargoData = computed(() => {
 const truckData = computed(() => {
   if (!props.truck) return []
 
+  // 货物净重总和：优先按所需箱数 needBoxCount 计算
   const netWeightTotal = props.truck.cargo.reduce((sum, item) => {
-    return sum + item.netWeight * item.mixedLayerCount * item.layerBoxCount
+    const boxCount =
+      item.needBoxCount ?? item.mixedLayerCount * item.layerBoxCount
+    return sum + item.netWeight * boxCount
   }, 0)
 
+  // 货物毛重总和：同上
   const grossWeightTotal = props.truck.cargo.reduce((sum, item) => {
-    return sum + item.grossWeight * item.mixedLayerCount * item.layerBoxCount
+    const boxCount =
+      item.needBoxCount ?? item.mixedLayerCount * item.layerBoxCount
+    return sum + item.grossWeight * boxCount
   }, 0)
 
   const freeLength =
@@ -63,10 +69,13 @@ const truckData = computed(() => {
   const truckVolume =
     props.truck.length * props.truck.width * props.truck.height
 
+  // 货物体积：优先按所需箱数 needBoxCount 计算，兼容无 needBoxCount 的情况
   const cargoVolume = props.truck.cargo.reduce((sum, item) => {
     const volume =
       item.relativeLength * item.relativeWidth * item.relativeHeight
-    return sum + volume * item.mixedLayerCount * item.layerBoxCount
+    const boxCount =
+      item.needBoxCount ?? item.mixedLayerCount * item.layerBoxCount
+    return sum + volume * boxCount
   }, 0)
 
   return [
