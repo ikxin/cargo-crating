@@ -119,7 +119,7 @@ const startCalculation = () => {
         v-model="truckInfo"
         allow-search
         placeholder="选择货车"
-        class="!w-36"
+        class="w-36!"
         value-key="name"
       >
         <template v-for="item in database.truck" :key="item.id">
@@ -138,7 +138,7 @@ const startCalculation = () => {
               v-model="cargo.cargoId"
               allow-search
               @change="selectChange(index, $event)"
-              class="!w-48"
+              class="w-48!"
             >
               <template v-for="item in database.cargo" :key="item.id">
                 <AOption :value="item.id" :label="item.name" />
@@ -146,7 +146,7 @@ const startCalculation = () => {
             </ASelect>
           </AFormItem>
           <AFormItem label="摆放方式" show-colon>
-            <ASelect v-model="cargo.placement" class="!w-48">
+            <ASelect v-model="cargo.placement" class="w-48!">
               <AOption value="顺向摆放">顺向摆放</AOption>
               <AOption value="横向摆放">横向摆放</AOption>
               <AOption value="顺向靠放" label="顺向靠放">
@@ -182,7 +182,7 @@ const startCalculation = () => {
               :max="100000"
               :precision="0"
               mode="button"
-              class="!w-48"
+              class="w-48!"
             />
           </AFormItem>
           <AButton

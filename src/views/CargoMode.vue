@@ -130,7 +130,7 @@ const startCalculation = () => {
               v-model="cargo.cargoId"
               allow-search
               @change="selectChange(index, $event)"
-              class="!w-48"
+              class="w-48!"
             >
               <template v-for="item in database.cargo" :key="item.id">
                 <AOption :value="item.id" :label="item.name" />
@@ -143,7 +143,7 @@ const startCalculation = () => {
               :min="0"
               :max="100000"
               mode="button"
-              class="!w-48"
+              class="w-48!"
             />
           </AFormItem>
           <AButton

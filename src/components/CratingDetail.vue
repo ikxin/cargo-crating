@@ -86,6 +86,7 @@ const truckData = computed(() => {
     {
       label: '剩余长度',
       value: `${freeLength.toFixed(1)}mm`,
+      class: freeLength < 0 ? 'bg-[#F53F3F] text-white' : '',
     },
     {
       label: '货车长度',
@@ -230,6 +231,7 @@ const columns = [
     title: '最大箱数',
     dataIndex: 'maxBoxCount',
     align: 'center',
+    bodyCellClass: '!bg-yellow-100',
   },
   {
     title: '最大净重',
@@ -337,12 +339,19 @@ const exportData = () => {
       </AButton>
     </template>
     <ADescriptions
-      :data="truckData"
       bordered
       :column="{ xs: 1, sm: 2, md: 3, lg: 4, xl: 5 }"
       class="mb-4"
       size="large"
-    ></ADescriptions>
+    >
+      <template v-for="item in truckData" :key="item.label">
+        <ADescriptionsItem :label="item.label">
+          <div class="px-5 py-2.5" :class="[item.class]">
+            {{ item.value }}
+          </div>
+        </ADescriptionsItem>
+      </template>
+    </ADescriptions>
     <ATable
       :columns
       :data="cargoData"
@@ -354,3 +363,9 @@ const exportData = () => {
     ></ATable>
   </ACard>
 </template>
+
+<style scoped>
+:deep(.arco-descriptions-item-value) {
+  padding: 0 !important;
+}
+</style>
