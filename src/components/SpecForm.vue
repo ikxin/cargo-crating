@@ -45,6 +45,25 @@ const handleSubmit = (done) => {
   })
 }
 
+const focusInput = (event, offset) => {
+  event.preventDefault()
+  event.stopPropagation()
+
+  const inputs = Array.from(
+    formRef.value?.$el?.querySelectorAll('input') ?? [],
+  ).filter((input) => !input.disabled && input.offsetParent !== null)
+  const index = inputs.indexOf(event.target)
+  const nextInput = inputs[index + offset]
+
+  nextInput?.focus()
+  nextInput?.select?.()
+}
+
+const handleFormKeydown = (event) => {
+  if (event.key === 'ArrowUp') focusInput(event, -1)
+  if (event.key === 'ArrowDown') focusInput(event, 1)
+}
+
 const handleClose = () => {
   formRef.value.resetFields()
 }
@@ -57,7 +76,12 @@ const handleClose = () => {
     @before-ok="handleSubmit"
     @close="handleClose"
   >
-    <AForm ref="form" :model="data" auto-label-width>
+    <AForm
+      ref="form"
+      :model="data"
+      auto-label-width
+      @keydown.capture="handleFormKeydown"
+    >
       <AFormItem label="名称" field="name" :rules="{ required: true }">
         <AInput v-model="data.name" />
       </AFormItem>

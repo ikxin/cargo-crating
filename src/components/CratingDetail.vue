@@ -1,5 +1,7 @@
 <script setup>
-import { computed, ref } from 'vue'
+import { computed, nextTick, onBeforeUnmount, ref, useTemplateRef } from 'vue'
+import Sortable from 'sortablejs'
+import { useStorage } from '@vueuse/core'
 
 const props = defineProps({
   truck: Object,
@@ -135,7 +137,7 @@ const truckData = computed(() => {
   ]
 })
 
-const columns = [
+const baseColumns = [
   {
     title: '货物名称',
     dataIndex: 'name',
@@ -263,6 +265,98 @@ const columns = [
   },
 ]
 
+const columnSetting = useStorage(
+  'cargo-crating-detail-columns',
+  baseColumns.map((item) => ({ dataIndex: item.dataIndex, visible: true })),
+)
+
+const normalizeColumnSetting = () => {
+  const exists = new Set(baseColumns.map((item) => item.dataIndex))
+  const setting = Array.isArray(columnSetting.value) ? columnSetting.value : []
+  const saved = setting.filter((item) => exists.has(item.dataIndex))
+  const savedKeys = new Set(saved.map((item) => item.dataIndex))
+  const missing = baseColumns
+    .filter((item) => !savedKeys.has(item.dataIndex))
+    .map((item) => ({ dataIndex: item.dataIndex, visible: true }))
+
+  columnSetting.value = [...saved, ...missing]
+}
+
+normalizeColumnSetting()
+
+const visibleColumns = computed(() => {
+  return columnSetting.value
+    .filter((item) => item.visible)
+    .map((item, index) => {
+      const col = baseColumns.find((col) => col.dataIndex === item.dataIndex)
+      if (!col) return null
+
+      return {
+        ...col,
+        fixed:
+          index < 2 && ['name', 'placement'].includes(col.dataIndex)
+            ? 'left'
+            : undefined,
+      }
+    })
+    .filter(Boolean)
+})
+
+const tableScrollX = computed(() => {
+  return Math.max(
+    800,
+    visibleColumns.value.reduce((sum, item) => sum + (item.width || 110), 0),
+  )
+})
+
+const columnListRef = useTemplateRef('columnList')
+let columnSortable
+
+const initColumnDraggable = async (visible = true) => {
+  if (!visible) return
+
+  await nextTick()
+  await new Promise((resolve) => setTimeout(resolve))
+
+  const listElement = columnListRef.value
+  if (!listElement) return
+
+  columnSortable?.destroy()
+  columnSortable = Sortable.create(listElement, {
+    animation: 150,
+    handle: '.column-drag-handle',
+    ghostClass: 'sortable-ghost',
+    onEnd(event) {
+      if (event.oldIndex === event.newIndex) return
+
+      const list = [...columnSetting.value]
+      const [column] = list.splice(event.oldIndex, 1)
+      list.splice(event.newIndex, 0, column)
+      columnSetting.value = list
+    },
+  })
+}
+
+onBeforeUnmount(() => columnSortable?.destroy())
+
+const weightColumnKeys = new Set([
+  'mixedNetWeight',
+  'mixedGrossWeight',
+  'layerNetWeight',
+  'layerGrossWeight',
+  'maxNetWeight',
+  'maxGrossWeight',
+])
+
+const getExportValue = (item, col) => {
+  if (col.dataIndex === 'name') return item.name || '未选择'
+  if (col.dataIndex === 'placement') return item.placement || '未选择'
+  if (weightColumnKeys.has(col.dataIndex)) {
+    return `${(item[col.dataIndex] || 0).toFixed(1)}kg`
+  }
+  return item[col.dataIndex] ?? 0
+}
+
 const exportData = () => {
   if (!props.truck || !cargoData.value || cargoData.value.length === 0) {
     alert('请先选择货车型号并添加货物')
@@ -283,34 +377,12 @@ const exportData = () => {
   exportDataArray.push([])
 
   // 货物数据表头
-  const cargoHeaders = columns.map((col) => col.title)
+  const cargoHeaders = visibleColumns.value.map((col) => col.title)
   exportDataArray.push(cargoHeaders)
 
   // 货物数据
   cargoData.value.forEach((item) => {
-    const row = [
-      item.name || '未选择',
-      item.placement || '未选择',
-      item.mixedLayerCount || 0,
-      item.mixedLength || 0,
-      item.mixedBoxCount || 0,
-      `${(item.mixedNetWeight || 0).toFixed(1)}kg`,
-      `${(item.mixedGrossWeight || 0).toFixed(1)}kg`,
-      item.rowBoxCount || 0,
-      item.columnBoxCount || 0,
-      item.layerLength || 0,
-      item.layerBoxCount || 0,
-      `${(item.layerNetWeight || 0).toFixed(1)}kg`,
-      `${(item.layerGrossWeight || 0).toFixed(1)}kg`,
-      item.freeLength || 0,
-      item.freeWidth || 0,
-      item.freeHeight || 0,
-      item.maxLayerCount || 0,
-      item.maxBoxCount || 0,
-      `${(item.maxNetWeight || 0).toFixed(1)}kg`,
-      `${(item.maxGrossWeight || 0).toFixed(1)}kg`,
-    ]
-
+    const row = visibleColumns.value.map((col) => getExportValue(item, col))
     exportDataArray.push(row)
   })
 
@@ -343,12 +415,47 @@ const exportData = () => {
 <template>
   <ACard title="装箱明细">
     <template #extra>
-      <AButton type="primary" @click="exportData">
-        <template #icon>
-          <IconExport />
-        </template>
-        <template #default>导出</template>
-      </AButton>
+      <ASpace>
+        <APopover
+          trigger="click"
+          position="bottom"
+          @popup-visible-change="initColumnDraggable"
+        >
+          <AButton>列设置</AButton>
+          <template #content>
+            <div
+              ref="columnList"
+              class="flex max-h-96 w-56 flex-col gap-2 overflow-auto"
+            >
+              <div
+                v-for="item in columnSetting"
+                :key="item.dataIndex"
+                :data-column-key="item.dataIndex"
+                class="flex items-center justify-between gap-2 rounded px-1 py-0.5 hover:bg-gray-50"
+              >
+                <ACheckbox v-model="item.visible">
+                  {{
+                    baseColumns.find((col) => col.dataIndex === item.dataIndex)
+                      ?.title
+                  }}
+                </ACheckbox>
+                <span
+                  class="column-drag-handle inline-flex cursor-move items-center text-gray-400 hover:text-gray-700"
+                  title="拖拽排序"
+                >
+                  <IconMenu />
+                </span>
+              </div>
+            </div>
+          </template>
+        </APopover>
+        <AButton type="primary" @click="exportData">
+          <template #icon>
+            <IconExport />
+          </template>
+          <template #default>导出</template>
+        </AButton>
+      </ASpace>
     </template>
     <ADescriptions
       bordered
@@ -383,10 +490,10 @@ const exportData = () => {
       </ADescriptionsItem>
     </ADescriptions>
     <ATable
-      :columns
+      :columns="visibleColumns"
       :data="cargoData"
       :scroll="{
-        x: 2000,
+        x: tableScrollX,
       }"
       :pagination="false"
       size="large"

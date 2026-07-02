@@ -1,5 +1,13 @@
 <script setup>
-import { reactive } from 'vue'
+import {
+  nextTick,
+  onBeforeUnmount,
+  onMounted,
+  reactive,
+  useTemplateRef,
+  watch,
+} from 'vue'
+import Sortable from 'sortablejs'
 import { useStorage } from '@vueuse/core'
 import SpecForm from './SpecForm.vue'
 
@@ -31,6 +39,58 @@ const updateRecord = (record) => {
   form.open = true
 }
 
+const tableRef = useTemplateRef('table')
+let sortable
+
+const reorderRecords = (sortedIds) => {
+  const list = [...database.value[props.prop]]
+  const sortedRecords = sortedIds
+    .map((id) => list.find((item) => item.id === id))
+    .filter(Boolean)
+  const sortedIdSet = new Set(sortedIds)
+  const sortedPositions = list
+    .map((item, index) => (sortedIdSet.has(item.id) ? index : -1))
+    .filter((index) => index !== -1)
+
+  if (sortedRecords.length !== sortedPositions.length) return
+
+  sortedPositions.forEach((position, index) => {
+    list[position] = sortedRecords[index]
+  })
+  database.value[props.prop] = list
+}
+
+const initSortable = async () => {
+  await nextTick()
+
+  const body = tableRef.value?.$el?.querySelector('.arco-table-tbody, tbody')
+  if (!body) return
+
+  sortable?.destroy()
+  sortable = Sortable.create(body, {
+    animation: 150,
+    draggable: 'tr',
+    handle: '.spec-drag-handle',
+    ghostClass: 'sortable-ghost',
+    onEnd(event) {
+      const sortedIds = Array.from(
+        event.to.querySelectorAll('.spec-drag-handle[data-sort-id]'),
+      ).map((item) => item.dataset.sortId)
+
+      reorderRecords(sortedIds)
+    },
+  })
+}
+
+onMounted(initSortable)
+onBeforeUnmount(() => sortable?.destroy())
+
+watch(
+  () => database.value[props.prop].map((item) => item.id).join(','),
+  initSortable,
+  { flush: 'post' },
+)
+
 const deleteRecord = (record) => {
   const index = database.value[props.prop].findIndex(
     (item) => item.id === record.id,
@@ -58,8 +118,19 @@ const deleteRecord = (record) => {
       ></SpecForm>
     </template>
     <template #default>
-      <ATable :data="database[props.prop]">
+      <ATable ref="table" row-key="id" :data="database[props.prop]">
         <template #columns>
+          <ATableColumn title="排序" align="center" :width="60">
+            <template #cell="{ record }">
+              <span
+                class="spec-drag-handle inline-flex cursor-move items-center text-gray-400 hover:text-gray-700"
+                :data-sort-id="record.id"
+                title="拖拽排序"
+              >
+                <IconMenu />
+              </span>
+            </template>
+          </ATableColumn>
           <ATableColumn title="名称" dataIndex="name" align="center">
             <template #cell="{ record }">
               {{ record.name }}
@@ -86,7 +157,7 @@ const deleteRecord = (record) => {
               </template>
             </ATableColumn>
           </template>
-          <ATableColumn title="操作" align="center">
+          <ATableColumn title="操作" align="center" :width="96">
             <template #cell="{ record }">
               <ASpace>
                 <AButton status="warning" @click="updateRecord(record)">

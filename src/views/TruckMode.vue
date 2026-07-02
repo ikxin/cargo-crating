@@ -121,6 +121,12 @@ const selectChange = (index, value) => {
   }
 }
 
+const formatCargoSpec = (cargo) => {
+  if (!cargo?.cargoId) return ''
+
+  return `长 ${cargo.length ?? '-'}mm 宽 ${cargo.width ?? '-'}mm 高 ${cargo.height ?? '-'}mm 净重 ${Number(cargo.netWeight || 0).toFixed(1)}kg 毛重 ${Number(cargo.grossWeight || 0).toFixed(1)}kg`
+}
+
 const targetTruck = ref()
 
 const addCargo = async () => {
@@ -236,6 +242,11 @@ watch(
                 <AOption :value="item.id" :label="item.name" />
               </template>
             </ASelect>
+          </AFormItem>
+          <AFormItem v-if="cargo.cargoId" label="单箱规格" show-colon>
+            <ATag color="arcoblue" class="h-8! leading-8!">
+              {{ formatCargoSpec(cargo) }}
+            </ATag>
           </AFormItem>
           <AFormItem label="摆放方式" show-colon>
             <ASelect v-model="cargo.placement" class="w-48!">
