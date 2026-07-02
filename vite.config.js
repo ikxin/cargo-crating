@@ -8,5 +8,11 @@ export default defineConfig({
   plugins: [vue(), vueDevTools(), tailwindcss()],
   build: {
     chunkSizeWarningLimit: 2048,
+    rolldownOptions: {
+      checks: {
+        // Suppress invalid /* #__PURE__ */ annotations emitted by dependencies.
+        invalidAnnotation: false,
+      },
+    },
   },
 })
