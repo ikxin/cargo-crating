@@ -1,6 +1,18 @@
 # Changelog
 
 
+## v0.5.0
+
+[compare changes](https://github.com/ikxin/cargo-crating/compare/v0.4.0...v0.5.0)
+
+### 🚀 Enhancements
+
+- 优化规格管理和装箱明细展示 ([8934a88](https://github.com/ikxin/cargo-crating/commit/8934a88))
+
+### ❤️ Contributors
+
+- 一纸忘忧 ([@ikxin](https://github.com/ikxin))
+
 ## v0.4.0
 
 [compare changes](https://github.com/ikxin/cargo-crating/compare/v0.3.1...v0.4.0)
