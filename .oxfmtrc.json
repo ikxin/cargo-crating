@@ -1,0 +1,10 @@
+{
+  "$schema": "./node_modules/oxfmt/configuration_schema.json",
+  "printWidth": 80,
+  "semi": false,
+  "singleQuote": true,
+  "sortTailwindcss": {
+    "stylesheet": "./src/style.css"
+  },
+  "ignorePatterns": ["src-tauri/**"]
+}
