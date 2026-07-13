@@ -1,6 +1,24 @@
 # Changelog
 
 
+## v0.6.0
+
+[compare changes](https://github.com/ikxin/cargo-crating/compare/v0.5.0...v0.6.0)
+
+### 🚀 Enhancements
+
+- 引入 Three.js 实现 3D 货物装载预览功能 ([f332859](https://github.com/ikxin/cargo-crating/commit/f332859))
+- 添加字段排序功能并修复自定义排序 ([67ccbfa](https://github.com/ikxin/cargo-crating/commit/67ccbfa))
+
+### 🏡 Chore
+
+- 添加 rolldownOptions 配置以抑制无效注释警告 ([04f9c0e](https://github.com/ikxin/cargo-crating/commit/04f9c0e))
+- 添加 Cloudflare 部署配置 ([fe7412a](https://github.com/ikxin/cargo-crating/commit/fe7412a))
+
+### ❤️ Contributors
+
+- 一纸忘忧 ([@ikxin](https://github.com/ikxin))
+
 ## v0.5.0
 
 [compare changes](https://github.com/ikxin/cargo-crating/compare/v0.4.0...v0.5.0)
@@ -50,4 +68,3 @@
 ### ❤️ Contributors
 
 - 一纸忘忧 ([@ikxin](https://github.com/ikxin))
-
