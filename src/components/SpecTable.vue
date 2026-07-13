@@ -1,5 +1,6 @@
 <script setup>
 import {
+  computed,
   nextTick,
   onBeforeUnmount,
   onMounted,
@@ -42,6 +43,21 @@ const updateRecord = (record) => {
 const tableRef = useTemplateRef('table')
 let sortable
 
+const fieldSort = reactive({
+  dataIndex: '',
+  direction: '',
+})
+
+const customSortEnabled = computed(() => !fieldSort.direction)
+
+const dimensionSortable = {
+  sortDirections: ['ascend', 'descend'],
+  sorter: (a, b, { dataIndex, direction }) => {
+    const result = Number(a[dataIndex]) - Number(b[dataIndex])
+    return direction === 'descend' ? -result : result
+  },
+}
+
 const reorderRecords = (sortedIds) => {
   const list = [...database.value[props.prop]]
   const sortedRecords = sortedIds
@@ -69,10 +85,13 @@ const initSortable = async () => {
   sortable?.destroy()
   sortable = Sortable.create(body, {
     animation: 150,
+    disabled: !customSortEnabled.value,
     draggable: 'tr',
     handle: '.spec-drag-handle',
     ghostClass: 'sortable-ghost',
     onEnd(event) {
+      if (!customSortEnabled.value) return
+
       const sortedIds = Array.from(
         event.to.querySelectorAll('.spec-drag-handle[data-sort-id]'),
       ).map((item) => item.dataset.sortId)
@@ -80,6 +99,12 @@ const initSortable = async () => {
       reorderRecords(sortedIds)
     },
   })
+}
+
+const handleSorterChange = (dataIndex, direction) => {
+  fieldSort.dataIndex = direction ? dataIndex : ''
+  fieldSort.direction = direction
+  sortable?.option('disabled', !customSortEnabled.value)
 }
 
 onMounted(initSortable)
@@ -118,14 +143,27 @@ const deleteRecord = (record) => {
       ></SpecForm>
     </template>
     <template #default>
-      <ATable ref="table" row-key="id" :data="database[props.prop]">
+      <ATable
+        ref="table"
+        row-key="id"
+        :data="database[props.prop]"
+        @sorter-change="handleSorterChange"
+      >
         <template #columns>
           <ATableColumn title="排序" align="center" :width="60">
             <template #cell="{ record }">
               <span
-                class="spec-drag-handle inline-flex cursor-move items-center text-gray-400 hover:text-gray-700"
+                class="spec-drag-handle inline-flex items-center"
+                :class="
+                  customSortEnabled
+                    ? 'cursor-move text-gray-400 hover:text-gray-700'
+                    : 'cursor-not-allowed text-gray-300'
+                "
                 :data-sort-id="record.id"
-                title="拖拽排序"
+                :title="
+                  customSortEnabled ? '拖拽排序' : '字段排序时不可自定义排序'
+                "
+                :aria-disabled="!customSortEnabled"
               >
                 <IconMenu />
               </span>
@@ -136,13 +174,28 @@ const deleteRecord = (record) => {
               {{ record.name }}
             </template>
           </ATableColumn>
-          <ATableColumn title="长度" dataIndex="length" align="center">
+          <ATableColumn
+            title="长度"
+            dataIndex="length"
+            align="center"
+            :sortable="dimensionSortable"
+          >
             <template #cell="{ record }"> {{ record.length }}mm </template>
           </ATableColumn>
-          <ATableColumn title="宽度" dataIndex="width" align="center">
+          <ATableColumn
+            title="宽度"
+            dataIndex="width"
+            align="center"
+            :sortable="dimensionSortable"
+          >
             <template #cell="{ record }"> {{ record.width }}mm </template>
           </ATableColumn>
-          <ATableColumn title="高度" dataIndex="height" align="center">
+          <ATableColumn
+            title="高度"
+            dataIndex="height"
+            align="center"
+            :sortable="dimensionSortable"
+          >
             <template #cell="{ record }"> {{ record.height }}mm </template>
           </ATableColumn>
           <template v-if="props.prop === 'cargo'">
