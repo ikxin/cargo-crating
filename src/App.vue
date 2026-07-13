@@ -28,9 +28,9 @@ const tabs = {
       <KeepAlive>
         <component :is="tabs[mode]"></component>
       </KeepAlive>
-      <div class="grid grid-cols-7 gap-4">
-        <SpecTable class="col-span-3" prop="truck" name="货车" />
-        <SpecTable class="col-span-4" prop="cargo" name="货物" />
+      <div class="grid grid-cols-1 gap-4 lg:grid-cols-7">
+        <SpecTable class="col-span-1 lg:col-span-3" prop="truck" name="货车" />
+        <SpecTable class="col-span-1 lg:col-span-4" prop="cargo" name="货物" />
       </div>
     </div>
   </AScrollbar>

@@ -2,6 +2,7 @@
 import { computed, nextTick, onBeforeUnmount, ref, useTemplateRef } from 'vue'
 import Sortable from 'sortablejs'
 import { useStorage } from '@vueuse/core'
+import CargoPreview from './CargoPreview.vue'
 
 const props = defineProps({
   truck: Object,
@@ -498,6 +499,7 @@ const exportData = () => {
       :pagination="false"
       size="large"
     ></ATable>
+    <CargoPreview :truck="truck" class="mt-4" />
   </ACard>
 </template>
 
